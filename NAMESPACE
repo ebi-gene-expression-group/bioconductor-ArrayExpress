@@ -1,0 +1,2 @@
+export("ArrayExpress","ArrayExpress2", "extract.zip", "extract.zip.from.AE")
+importFrom("limma", "removeExt")

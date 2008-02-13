@@ -1,0 +1,68 @@
+%\VignetteIndexEntry{ArrayExpress}
+%\VignetteDepends{Biobase}
+%\VignetteKeywords{ImportData}
+%\VignettePackage{ArrayExpress}
+
+\documentclass[a4paper]{article}
+
+\usepackage{times}
+\usepackage{a4wide}
+\usepackage{verbatim}
+
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Rclass}[1]{\textit{#1}}
+\newcommand{\Rfunction}[1]{{\small\texttt{#1}}}
+\clearpage
+
+\SweaveOpts{keep.source=TRUE,eps=FALSE,include=FALSE,width=4,height=4.5} 
+
+\begin{document}
+
+\title{ Building AffyBatch objects from ArrayExpress datasets }
+
+\author{Audrey Kauffmann}
+\maketitle
+
+\section{ArrayExpress database} 
+
+ArrayExpress is a public repository for transcriptomics and related data, which is aimed at storing MIAME-compliant data in accordance with MGED recommendations. The ArrayExpress Data Warehouse stores gene-indexed expression profiles and related biomeasurements from a curated subset of experiments in the repository.
+Currently, 100,000 hybridisations are represented in ArrayExpress. Please visit http://www.ebi.ac.uk/arrayexpress/ for more information on the database.
+
+
+\section{Convert ArrayExpress data set in R object}
+
+\paragraph{Load the required package}
+First you need to load the package \Rpackage{ArrayExpress}.
+
+<<loadlibs>>=
+library("ArrayExpress")
+@ 
+
+You need to be connected to Internet to have access to the database.
+
+\paragraph{Producing an R object}
+There are two arguments needed to call the \Rfunction{ArrayExpress} function. The first one is the name of the experiment you want to convert. This name must be a valid identifier of a \underline{raw} data set stored in ArrayExpress Repository. \Rpackage{ArrayExpress} does not convert \underline{preprocessed} data available on the Data Warehouse. The second one is the name of the directory in which the data are downloaded, these data are deleted after execution of the function.
+The function will convert the data set in a \Rclass{affyBatch} if the experiments are Affymetrix microarrays. It will soon handle other data types.
+
+%
+<<loadlibs>>=
+data = ArrayExpress("E-ATMX-26", tempoutdir=".")
+class(data)
+@
+%
+As the data set identified \textit{E-ATMX-26} is an Affymetrix experiment, the object \Robject{data} is an \Rclass{affyBatch}.
+
+\begin{table*}[tbp]
+\begin{minipage}{\textwidth}
+{\small
+<<sessionInfo, print=TRUE>>=
+sessionInfo()
+@ 
+}\end{minipage}
+\caption{\label{tab:sessioninfo}%
+The output of \Rfunction{sessionInfo} on the build system 
+after running this vignette.}
+\end{table*}
+
+\end{document}

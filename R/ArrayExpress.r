@@ -1,4 +1,4 @@
-ArrayExpress = function(input, tempoutdir = tempdir())
+ArrayExpress = function(input, tempoutdir = ".")
   {
     dir = gsub("^E-|-[0-9]{1,10}","",input)
     url = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment"

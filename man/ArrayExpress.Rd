@@ -11,7 +11,9 @@ ArrayExpress(input, tempoutdir)
 }
 \arguments{
   \item{input}{ is an ArrayExpress identifier.}
-  \item{tempoutdir}{ is the name of the directory in which the files downloaded on the ArrayExpress repository will be extracted.}
+  \item{tempoutdir}{ is the name of the directory in which the files
+    downloaded on the ArrayExpress repository will be extracted. The
+    default is the current directory.}
 }
 \value{
   A S4 class object of class

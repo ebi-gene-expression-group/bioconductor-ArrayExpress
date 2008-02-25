@@ -1,4 +1,4 @@
-ArrayExpress2 = function(input, tempoutdir = tempdir())
+ArrayExpress2 = function(input, tempoutdir = ".")
   {
 
     ## Building the link with the input name
@@ -11,7 +11,7 @@ ArrayExpress2 = function(input, tempoutdir = tempdir())
     dnld = try(download.file(raw, rawdata))
 
     ## Download checking
-    if(class(dnld) == 'try-error')
+    if(inherits(dnld, 'try-error'))
       {
         file.remove(rawdata)
         stop(paste(raw, " does not exist. \n"),sep="")
@@ -33,6 +33,7 @@ ArrayExpress2 = function(input, tempoutdir = tempdir())
     if(length(notuse) == 0)
       files = allfiles
 
+    
     ## Building the S4 class object
     
     ## Create AffyBatch for Affymetrix data sets
@@ -42,6 +43,17 @@ ArrayExpress2 = function(input, tempoutdir = tempdir())
     ## Non Affymetrix data
     if(length(grep(".cel",files)) == 0)
       {
+        system(paste("wc -l ", input, "-raw* > tempwcl",sep=""))
+        tw =  read.table("tempwcl",nrow=length(files),sep="E")
+        nlines = unique(tw[,1])
+        file.remove("tempwcl")    
+        if(length(nlines)>1)
+          {
+            file.remove(allfiles)
+            file.remove(rawdata)
+            stop(sprintf("The files have different number of lines.")) 
+          } 
+
         ## Downloading and reading the sample information file .sdrf
         samples = paste(exp,".sdrf.txt",sep="")
         ph = try(read.AnnotatedDataFrame(samples,row.names=NULL, blank.lines.skip = T, fill=TRUE))
@@ -52,7 +64,13 @@ ArrayExpress2 = function(input, tempoutdir = tempdir())
           stop("Cannot determine the number of dyes from the .sdrf file (usually in Label column).")
         
         ndyes = length(dyes[dyes!=""])
-        
+        if(ndyes > 2)
+          {
+            file.remove(allfiles)
+            file.remove(rawdata)
+            stop(sprintf("The package does not support more than 2 dyes.")) 
+          } 
+
         ## Building ExpressionSet when one colour
         if(ndyes == 1)
           {
@@ -67,8 +85,13 @@ ArrayExpress2 = function(input, tempoutdir = tempdir())
             if(length(grep("signal mean",allcnames, ignore.case=TRUE)) != 0)  columns = "signal mean"
             if(length(grep("AVG_Signal",allcnames, ignore.case=TRUE)) != 0)  columns = "AVG_Signal"
             if(length(grep("gMeanSignal",allcnames, ignore.case=TRUE)) != 0)  columns = "gMeanSignal"
-                        
-            ## Check that the column name is of known format 
+            if(length(grep("F635 Mean$",allcnames, ignore.case=TRUE)) != 0)  columns = "F635 Mean$"
+            if(length(grep("F532 Mean$",allcnames, ignore.case=TRUE)) != 0)  columns = "F532 Mean$"
+             if(length(grep("Cy5 Intensity$",allcnames, ignore.case=TRUE)) != 0)  columns = "Cy5 Intensity$"
+             if(length(grep("Cy3 Intensity$",allcnames, ignore.case=TRUE)) != 0)  columns = "Cy3 Intensity$"
+            if(length(grep("Biotin Intensity$",allcnames, ignore.case=TRUE)) != 0)  columns = "Biotin Intensity$"
+          
+         ## Check that the column name is of known format 
             if(columns == 0)
               {
                 file.remove(allfiles)
@@ -77,7 +100,14 @@ ArrayExpress2 = function(input, tempoutdir = tempdir())
               }
             
             ## Creating the S4 object
-            raweset = try(read.AE_1col(path=tempoutdir,files=files, columns=columns))
+            raweset = try(read.AE.1col(path=tempoutdir,files=files, columns=columns))
+            if(inherits(raweset, 'try-error'))
+              {
+                file.remove(allfiles)
+                file.remove(rawdata)
+                stop(sprintf("Error in read.AE.1col: '%s'.", raweset[1]))
+              }
+
           }#end ndyes ==1
                 
         ## Building NChannelSet when two colour
@@ -88,56 +118,64 @@ ArrayExpress2 = function(input, tempoutdir = tempdir())
             allcnames = scan(paste(tempoutdir,files[1],sep="/"),what="",nlines=1, sep="\t")
             
             ## Looking for the right source to use
-            if(length(grep("F635 Mean$",allcnames)) != 0)  idsource = "genepix"
-            if(length(grep("rMeanSignal$",allcnames)) != 0)  idsource = "agilent"
-            if(length(grep("MTM Dens - Levels$",allcnames)) != 0)  idsource = "arrayvision"
-            if(length(grep("AMPCH1$",allcnames)) != 0)  idsource = "bluefuse"
-            if(length(grep("ch2 Intensity$",allcnames)) != 0)  idsource = "quantarray"
-            if(length(grep("Ch1 Mean$",allcnames)) != 0)  idsource = "scanarrayexpress"
-            if(length(grep("CH1I_MEAN$",allcnames)) != 0)  idsource = "smd.old"
-            if(length(grep("Ch1 Intensity (Mean)$",allcnames)) != 0)  idsource = "smd"
+            if(length(grep("F635 Mean$",allcnames)) != 0 && length(grep("F532 Mean$",allcnames)) != 0)  idsource = "genepix"
+            if(length(grep("rMeanSignal$",allcnames)) != 0 && length(grep("gMeanSignal$",allcnames)) != 0)  idsource = "agilent"
+            if(length(grep("MTM Dens - Levels$",allcnames)) != 0) idsource = "arrayvision"
+            if(length(grep("AMPCH1$",allcnames)) != 0 && length(grep("AMPCH2$",allcnames)) != 0)  idsource = "bluefuse"
+            if(length(grep("ch2 Intensity$",allcnames)) != 0 && length(grep("ch1 Intensity$",allcnames)) != 0)  idsource = "quantarray"
+            if(length(grep("Ch1 Mean$",allcnames)) != 0 &&length(grep("Ch2 Mean$",allcnames)) != 0)  idsource = "scanarrayexpress"
+            if(length(grep("CH1I_MEAN$",allcnames)) != 0 && length(grep("CH2I_MEAN$",allcnames)) != 0)  idsource = "smd.old"
+            if(length(grep("Ch1 Intensity (Mean)$",allcnames)) != 0 && length(grep("Ch2 Intensity (Mean)$",allcnames)) != 0)  idsource = "smd"
             if(length(grep("morphR.close.open$",allcnames)) != 0)  idsource = "spot.close.open"
-            if(idsource != "spot" && length(grep("Rmean$",allcnames)) != 0)  idsource = "spot"
+            if(idsource != "spot" && length(grep("Rmean$",allcnames)) != 0 && length(grep("Gmean$",allcnames)) != 0)  idsource = "spot"
             
             ## Check that the source type is of known format 
             if(idsource == 0)
               {
+                if(length(grep("rMedianSignal$",allcnames)) != 0 && length(grep("gMeanSignal$",allcnames)) != 0)  idsource = "agilent2"
+
                 if(length(grep("Mean [QL] Cy3$",allcnames)) != 0)  idsource = "generic1"
                 if(length(grep("Cy3_Volume$",allcnames)) != 0)  idsource = "generic2"
                 if(length(grep("Signal med Cy3$",allcnames)) != 0)  idsource = "generic3"
                 if(length(grep("Med.Sig.Cy3$",allcnames)) != 0)  idsource = "generic4"
                 if(length(grep("Signal Mean_Cy3$",allcnames)) != 0)  idsource = "generic5"
-                if(length(grep("Signal_Mean_Cy3$",allcnames)) != 0)  idsource = "generic6" ## E-MEXP-181 works
-                if(length(grep("F633 Mean$",allcnames)) != 0)  idsource = "generic7" ## other channel is F543 Mean E-MEXP-406 works
-                if(length(grep("Cy3 Intensity$",allcnames)) != 0)  idsource = "generic8" ## E-TABM-106 works
-                if(length(grep("Cy3 Mean$",allcnames)) != 0)  idsource = "generic9" ## E-TABM-138 works
-                if(length(grep("Cy3_Intensity$",allcnames)) != 0)  idsource = "generic10" ## E-TIGR-200 works
-                #if(idsource != 0) stop(sprintf("New 2 colour standard source type."))
-              }
+                if(length(grep("Signal_Mean_Cy3$",allcnames)) != 0)  idsource = "generic6"
+                if(length(grep("F633 Mean$",allcnames)) != 0)  idsource = "generic7"
+                if(length(grep("Cy3 Intensity$",allcnames)) != 0)  idsource = "generic8"
+                if(length(grep("Cy3 Mean$",allcnames)) != 0)  idsource = "generic9"
+                if(length(grep("Cy3_Intensity$",allcnames)) != 0)  idsource = "generic10"
+                if(length(grep("RefFore$",allcnames)) != 0)  idsource = "generic11"
+                if(length(grep("F570_mean_cy3$",allcnames)) != 0)  idsource = "generic12"
+                 if(length(grep("sMedianDens_Cy3$",allcnames)) != 0)  idsource = "generic13"
+             }
             if(idsource == 0)
               {
                 file.remove(allfiles)
                 file.remove(rawdata)                
                 stop(sprintf("Data are not from 2 colour standard source type."))
-              }
-              
+              }              
 
             ## Creating the RGList
-            eset_RGList = try(read.AE_2col(files=files,
+            esetRGList = try(read.AE.2col(files=files,
               path = tempoutdir,
               source = idsource))
-    
+
+            ## Replace 0 by NA
+            esetRGList$R[which(esetRGList$R == 0)] = NA
+            esetRGList$G[which(esetRGList$G == 0)] = NA
+            esetRGList$Rb[which(esetRGList$Rb == 0)] = NA
+            esetRGList$Gb[which(esetRGList$Gb == 0)] = NA
+           
             ## Checking that the object has been successfully created
-            if(class(eset_RGList) == 'try-error')
+            if(inherits(esetRGList, 'try-error'))
               {
                 file.remove(allfiles)
                 file.remove(rawdata)
-                stop(sprintf("Error in read.AE_2col: '%s'.", eset_RGList[1]))
-
+                stop(sprintf("Error in read.AE.2col: '%s'.", esetRGList[1]))
               }
             
             ## Creating the S4 object
-            assayData = with(eset_RGList, assayDataNew(R=R, G=G, Rb=Rb, Gb=Gb))
+            assayData = with(esetRGList, assayDataNew(R=R, G=G, Rb=Rb, Gb=Gb))
             raweset = try(new("NChannelSet",
               assayData = assayData))
           }#end ndyes ==2
@@ -156,7 +194,7 @@ ArrayExpress2 = function(input, tempoutdir = tempdir())
     file.remove(rawdata)
     
     ## Checking that the object has been successfully created
-    if(class(raweset) == 'try-error')      
+    if(inherits(raweset, 'try-error'))      
       stop(sprintf(raweset[1]))      
 
     return(raweset)
@@ -167,7 +205,7 @@ ArrayExpress2 = function(input, tempoutdir = tempdir())
 # Read 1 color files from AE to ExpressionSet
 # Modificated version of read.maimages from limma
 
-read.AE_1col <- function(files=NULL,path=NULL,columns=NULL,verbose=TRUE,sep="\t",quote=NULL,...)
+read.AE.1col <- function(files=NULL,path=NULL,columns=NULL,verbose=TRUE,sep="\t",quote=NULL,...)
 {
   ## Begin checking input arguments
   slides <- as.vector(as.character(files))
@@ -204,16 +242,20 @@ read.AE_1col <- function(files=NULL,path=NULL,columns=NULL,verbose=TRUE,sep="\t"
     if(!is.null(path)) fullname <- file.path(path,fullname)
     obj <- read.columnsAE(fullname,required.col,as.is=TRUE,nrows=nspots,flush=TRUE,...)
        
-    Y[,i] <- as.numeric(obj[,grep(columns,colnames(obj), ignore.case=TRUE)])
-    if(verbose) cat(paste("Read",fullname,"\n"))          
+    if(length(grep(columns,colnames(obj), ignore.case=TRUE)) == 1)
+      Y[,i] <- as.numeric(obj[,grep(columns,colnames(obj), ignore.case=TRUE)])
+    if(length(grep(columns,colnames(obj), ignore.case=TRUE)) != 1)
+      stop("Column names are not the same in all the files.")
+
+    if(verbose) cat(paste("Read",fullname,"\n"))
   }
   new("ExpressionSet",exprs=Y)
-}#end of read.AE_1col
+}#end of read.AE.1col
 
 # Read 2 colors files from AE into RGList
 # Modificated version of read.maimages from limma
 
-read.AE_2col <- function(files=NULL,source="generic",path=NULL,columns=NULL,verbose=TRUE,sep="\t",quote=NULL,...)
+read.AE.2col <- function(files=NULL,source="generic",path=NULL,columns=NULL,verbose=TRUE,sep="\t",quote=NULL,...)
 # Extracts an RG list from a series of image analysis output files
 # Gordon Smyth, modified by Audrey Kauffmann for AE 
 {
@@ -222,7 +264,7 @@ read.AE_2col <- function(files=NULL,source="generic",path=NULL,columns=NULL,verb
   nslides <- length(slides)
   names <- removeExt(files)        
 
-  source <- match.arg(source,c("generic","agilent","arrayvision","bluefuse","genepix","genepix.median","genepix.custom","imagene","quantarray","scanarrayexpress","smd.old","smd","spot","spot.close.open","generic1","generic2","generic3","generic4","generic5","generic6","generic7","generic8","generic9","generic10"))
+  source <- match.arg(source,c("generic","agilent","agilent2","arrayvision","bluefuse","genepix","genepix.median","genepix.custom","imagene","quantarray","scanarrayexpress","smd.old","smd","spot","spot.close.open","generic1","generic2","generic3","generic4","generic5","generic6","generic7","generic8","generic9","generic10","generic11","generic12","generic13"))
   ## source2 is the source type with qualifications removed
   source2 <- strsplit(source,split=".",fixed=TRUE)[[1]][1]
   if(source=="agilent") quote <- "" else quote <- "\""
@@ -232,7 +274,8 @@ read.AE_2col <- function(files=NULL,source="generic",path=NULL,columns=NULL,verb
     if(source2=="generic") stop("must specify columns for generic input")
     columns <- switch(source,
                       agilent = list(G="gMeanSignal$",Gb="gBGMedianSignal$",R="rMeanSignal$",Rb="rBGMedianSignal$"),
-                      arrayvision = list(G="MTM Dens - Levels$",Gb="Bkgd$",R="MTM Dens - Levels$",Rb="Bkgd$"),
+                      agilent2 = list(G="gMedianSignal$",Gb="gBGMedianSignal$",R="rMedianSignal$",Rb="rBGMedianSignal$"),
+                     arrayvision = list(G="MTM Dens - Levels$",Gb="Bkgd$",R="MTM Dens - Levels$",Rb="Bkgd$"),
                       bluefuse = list(G="AMPCH1$",R="AMPCH2$"),
                       genepix = list(R="F635 Mean$",G="F532 Mean$",Rb="B635 Mean$",Gb="B532 Mean$"),
                       quantarray = list(R="ch2 Intensity$",G="ch1 Intensity$",Rb="ch2 Background$",Gb="ch1 Background$"),
@@ -251,7 +294,10 @@ read.AE_2col <- function(files=NULL,source="generic",path=NULL,columns=NULL,verb
                       generic8 = list(R="Cy5 Intensity$",G="Cy3 Intensity$",Rb="Cy5 Background$",Gb="Cy3 Background$"),                      
                       generic9 = list(R="Cy5 Mean$",G="Cy3 Mean$",Rb="Cy5 Mean - B$",Gb="Cy3 Mean - B$"),                      
                       generic10 = list(R="Cy5_Intensity$",G="Cy3_Intensity$",Rb="Cy5_Background$",Gb="Cy3_Background$"),
-                    NULL
+                      generic11 = list(R="TestFore$",G="RefFore$",Rb="TestBack$",Gb="RefBack$"),
+                      generic12 = list(R="F670_mean_cy5$",G="F570_mean_cy3$",Rb="bkg_mean_cy5$",Gb="bkg_mean_cy3$"),
+                      generic13 = list(R="sMedianDens_Cy5$",G="sMedianDens_Cy3$",Rb="Bkgd_Cy5$",Gb="Bkgd_Cy3$"),
+                  NULL
                       )
   } else {
     if(!is.list(columns)) stop("columns must be a list")
@@ -298,33 +344,6 @@ read.AE_2col <- function(files=NULL,source="generic",path=NULL,columns=NULL,verb
 
   RG$source <- source
 
-  ## Set printer layout, if possible
-  if(source2=="agilent") {
-    if(!is.null(RG$genes$Row) && !is.null(RG$genes$Col)) {
-      nr <- length(unique(RG$genes$Row))
-      nc <- length(unique(RG$genes$Col))
-      if(nspots==nr*nc) RG$printer <- list(ngrid.r=1,ngrid.c=1,nspot.r=nr,nspot.c=nc)
-    }
-  }
-  if(source2=="genepix") {
-    if(!is.null(RG$genes$Block) && !is.null(RG$genes$Row) && !is.null(RG$genes$Column)) {
-      RG$printer <- getLayout(RG$genes,guessdups=FALSE)
-      nblocks <- RG$printer$ngrid.r*RG$printer$ngrid.c
-      if(!is.na(nblocks) && (nblocks>1) && !is.null(obj$X)) {
-        blocksize <- RG$printer$nspot.r*RG$printer$nspot.c
-        i <- (1:(nblocks-1))*blocksize
-        ngrid.r <- sum(obj$X[i] > obj$X[i+1]) + 1
-        if(!is.na(ngrid.r) && nblocks%%ngrid.r==0) {
-          RG$printer$ngrid.r <- ngrid.r
-          RG$printer$ngrid.c <- nblocks/ngrid.r
-        } else {
-          warning("Can't determine number of grid rows")
-          RG$printer$ngrid.r <- RG$printer$ngrid.c <- NA
-        }
-      }
-    }
-  }
-
   ## Read remainder of files
   for (i in 1:nslides) {
     if(i > 1) {
@@ -333,11 +352,17 @@ read.AE_2col <- function(files=NULL,source="generic",path=NULL,columns=NULL,verb
       if(verbose && source=="genepix.custom") cat("Custom background:",h$Background,"\n")
       obj <- read.columnsAE(fullname,required.col,sep="\t",as.is=TRUE,fill=TRUE,flush=TRUE)      
     }
-    for (a in cnames) RG[[a]][,i] <- obj[,grep(unlist(columns)[a],colnames(obj))]
+    for (a in cnames)
+      {
+        if(length(grep(unlist(columns)[a],colnames(obj))) != 0)
+          RG[[a]][,i] = as.numeric(obj[,grep(unlist(columns)[a],colnames(obj))])
+        if(length(grep(unlist(columns)[a],colnames(obj))) == 0)
+          stop("Column names are not the same in all the files.")
+      }
     if(verbose) cat(paste("Read",fullname,"\n"))
   }
   new("RGList",RG)
-}#end of read.AE_2col
+}#end of read.AE.2col
 
 
 read.columnsAE = function(file,required.col=NULL,sep="\t",quote="\"",skip=0,fill=TRUE,blank.lines.skip=TRUE,allowEscapes=FALSE,...)

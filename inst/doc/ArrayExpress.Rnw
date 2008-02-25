@@ -47,7 +47,7 @@ The function will convert the data set in a \Rclass{affyBatch} if the experiment
 
 %
 <<loadlibs>>=
-data = ArrayExpress("E-ATMX-26", tempoutdir=".")
+data = ArrayExpress("E-ATMX-26")
 class(data)
 @
 %

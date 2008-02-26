@@ -8,7 +8,7 @@ ArrayExpress2 = function(input, tempoutdir = ".")
     raw = paste(exp,".raw.zip",sep="")
     ## Saving temporarily the raw data
     rawdata = tempfile(tmpdir = tempoutdir)
-    dnld = try(download.file(raw, rawdata))
+    dnld = try(download.file(raw, rawdata, mode="wb"))
 
     ## Download checking
     if(inherits(dnld, 'try-error'))

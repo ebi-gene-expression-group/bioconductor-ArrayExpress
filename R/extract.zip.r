@@ -16,7 +16,7 @@ extract.zip = function (file, unzip = getOption("unzip")) {
     }
     else {
       rc <- .Internal(int.unzip(file.path(path, topic), 
-                                topic, path))
+                                NULL, path))
       if (rc == 0) 
         file <- file.path(path, topic)
     }

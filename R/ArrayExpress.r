@@ -3,13 +3,10 @@ ArrayExpress = function(input, tempoutdir = ".")
     dir = gsub("^E-|-[0-9]{1,10}","",input)
     url = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment"
     exp = paste(url,dir,input,input,sep="/")
-
-    ##saving temporarily the raw data
     raw = paste(exp,".raw.zip",sep="")
-    if(!exists(tempoutdir))
-     tempoutdir =  tempdir()
+    ## Saving temporarily the raw data
     rawdata = tempfile(tmpdir = tempoutdir)
-    dnld = try(download.file(raw, rawdata))
+    dnld = try(download.file(raw, rawdata, mode="wb"))
 
     if(class(dnld) == 'try-error')
       {

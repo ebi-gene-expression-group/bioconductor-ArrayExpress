@@ -1,6 +1,5 @@
 ArrayExpress2 = function(input, tempoutdir = ".")
   {
-
     ## Building the link with the input name
     dir = gsub("^E-|-[0-9]{1,10}","",input)
     url = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment"
@@ -38,7 +37,23 @@ ArrayExpress2 = function(input, tempoutdir = ".")
     
     ## Create AffyBatch for Affymetrix data sets
     if(length(grep(".cel",files)) == length(files))
-      raweset = try(ReadAffy(filenames = paste(tempoutdir,files,sep="/")))    
+      {
+        raweset = try(ReadAffy(filenames = paste(tempoutdir,files,sep="/")))
+        samples = paste(exp,".sdrf.txt",sep="")
+        ph = try(read.AnnotatedDataFrame(samples,row.names=NULL, blank.lines.skip = TRUE, fill=TRUE))
+        if(!inherits(ph, 'try-error'))
+          {
+            pData(ph) = pData(ph)[1:length(files),]
+            if(length(ph$Array.Data.File)==length(unique(ph$Array.Data.File)))
+              {
+                rownames(pData(ph)) = ph$Array.Data.File
+                pData(ph) = pData(ph)[sampleNames(raweset),]
+                phenoData(raweset) = ph
+              } else {
+                warning(sprintf("Cannot attach phenoData to the object as the Array Data File column of the sdrf file contains duplicated elements.")) 
+              }
+          }
+      }
    
     ## Non Affymetrix data
     if(length(grep(".cel",files)) == 0)
@@ -56,7 +71,7 @@ ArrayExpress2 = function(input, tempoutdir = ".")
 
         ## Downloading and reading the sample information file .sdrf
         samples = paste(exp,".sdrf.txt",sep="")
-        ph = try(read.AnnotatedDataFrame(samples,row.names=NULL, blank.lines.skip = T, fill=TRUE))
+        ph = try(read.AnnotatedDataFrame(samples,row.names=NULL, blank.lines.skip = TRUE, fill=TRUE))
         ## Checking the number of dyes in the sdrf file
         if(!is.null(class(ph$Label)))
           dyes = levels(as.factor(ph$Label))           
@@ -108,6 +123,18 @@ ArrayExpress2 = function(input, tempoutdir = ".")
                 stop(sprintf("Error in read.AE.1col: '%s'.", raweset[1]))
               }
 
+            if(!inherits(ph, 'try-error'))
+              {
+                pData(ph) = pData(ph)[1:length(files),]
+                if(length(ph$Array.Data.File)==length(unique(ph$Array.Data.File)))
+                  {
+                    rownames(pData(ph)) = gsub(".[a-z][a-z][a-z]$","",ph$Array.Data.File)
+                    pData(ph) = pData(ph)[sampleNames(raweset),]
+                    phenoData(raweset) = ph
+                  } else {
+                    warning(sprintf("Cannot attach phenoData to the object as the Array Data File column of the sdrf file contains duplicated elements.")) 
+                  }
+              }           
           }#end ndyes ==1
                 
         ## Building NChannelSet when two colour
@@ -178,6 +205,16 @@ ArrayExpress2 = function(input, tempoutdir = ".")
             assayData = with(esetRGList, assayDataNew(R=R, G=G, Rb=Rb, Gb=Gb))
             raweset = try(new("NChannelSet",
               assayData = assayData))
+
+            if(!inherits(ph, 'try-error'))
+              {
+                rawesetph = try(assign.pheno.ncs(files=files,ph=ph,raweset=raweset))
+                if(!inherits(rawesetph, 'try-error'))
+                  raweset = rawesetph
+                
+                if(inherits(rawesetph, 'try-error'))
+                  warning(sprintf("Cannot attach phenoData to the object as the Array Data File column of the sdrf file contains duplicated elements."))
+              }            
           }#end ndyes ==2
 
 
@@ -386,4 +423,23 @@ read.columnsAE = function(file,required.col=NULL,sep="\t",quote="\"",skip=0,fill
 }#end of read.columnsAE
 
 
+assign.pheno.ncs = function(ph,files,raweset)
+  {
+    si = pData(ph)[1:(length(files)*2),]
+    lab = split(si,si[,'Label'])
+    same = which(lapply(1:ncol(lab[[1]]), function(i) all(lab[[1]][i]==lab[[2]][i]))==TRUE)
+    all = lab[[1]][same]
+    gspe = lab[[1]][-same]
+    colnames(gspe) = paste(colnames(gspe),names(lab)[1],sep=".")
+    rspe = lab[[2]][-same]
+    colnames(rspe) = paste(colnames(rspe),names(lab)[2],sep=".")
+                
+    metaData = data.frame(labelDescription=c(rep("_ALL_",ncol(all)),rep("G",ncol(gspe)),rep("R",ncol(rspe))))
+                            
+    samples = new("AnnotatedDataFrame", data=cbind(all,gspe,rspe), varMetadata=metaData)
 
+    rownames(pData(samples)) = gsub(".[a-z][a-z][a-z]$","",samples$Array.Data.File)
+    pData(samples) = pData(samples)[sampleNames(raweset)$R,]
+    phenoData(raweset) = samples
+    return(raweset)
+  }

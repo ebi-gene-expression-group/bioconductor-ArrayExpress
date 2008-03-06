@@ -186,13 +186,7 @@ ArrayExpress2 = function(input, tempoutdir = ".")
             esetRGList = try(read.AE.2col(files=files,
               path = tempoutdir,
               source = idsource))
-
-            ## Replace 0 by NA
-            esetRGList$R[which(esetRGList$R == 0)] = NA
-            esetRGList$G[which(esetRGList$G == 0)] = NA
-            esetRGList$Rb[which(esetRGList$Rb == 0)] = NA
-            esetRGList$Gb[which(esetRGList$Gb == 0)] = NA
-           
+          
             ## Checking that the object has been successfully created
             if(inherits(esetRGList, 'try-error'))
               {
@@ -305,7 +299,7 @@ read.AE.2col <- function(files=NULL,source="generic",path=NULL,columns=NULL,verb
   ## source2 is the source type with qualifications removed
   source2 <- strsplit(source,split=".",fixed=TRUE)[[1]][1]
   if(source=="agilent") quote <- "" else quote <- "\""
-  if(source2=="imagene") return(read.imagene(files=files,path=path,ext=ext,names=names,columns=columns,other.columns=other.columns,verbose=verbose,sep=sep,quote=quote,...))
+  if(source2=="imagene") return(read.imagene(files=files,path=path,names=names,columns=columns,verbose=verbose,sep=sep,quote=quote,...))
 
   if(is.null(columns)) {
     if(source2=="generic") stop("must specify columns for generic input")
@@ -386,7 +380,6 @@ read.AE.2col <- function(files=NULL,source="generic",path=NULL,columns=NULL,verb
     if(i > 1) {
       fullname <- slides[i]
       if(!is.null(path)) fullname <- file.path(path,fullname)
-      if(verbose && source=="genepix.custom") cat("Custom background:",h$Background,"\n")
       obj <- read.columnsAE(fullname,required.col,sep="\t",as.is=TRUE,fill=TRUE,flush=TRUE)      
     }
     for (a in cnames)

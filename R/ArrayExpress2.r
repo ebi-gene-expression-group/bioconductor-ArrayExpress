@@ -1,4 +1,4 @@
-ArrayExpress2 = function(input, tempoutdir = ".")
+ArrayExpress2 = function(input, tempoutdir = ".", save = FALSE)
   {
     ## Building the link with the input name
     dir = gsub("^E-|-[0-9]{1,10}","",input)
@@ -216,17 +216,29 @@ ArrayExpress2 = function(input, tempoutdir = ".")
           {
             file.remove(allfiles)
             file.remove(rawdata)
-            stop(sprintf("Label column of the .sdrf file is not useable"))
+            stop(sprintf("Label column of the .sdrf file is not useable so we cannot detect if the data set is one or two colour. The R object cannot be created."))
           }
       }#end of non Affymetrix objects
 
     ## Removing the files downloaded and extracted
-    file.remove(allfiles)
-    file.remove(rawdata)
-    
+    if(!save)
+      {
+        file.remove(allfiles)
+        file.remove(rawdata)
+      }
+   
     ## Checking that the object has been successfully created
-    if(inherits(raweset, 'try-error'))      
-      stop(sprintf(raweset[1]))      
+    if(inherits(raweset, 'try-error'))
+      {
+        if(length(grep(".cel",files)) != 0 && length(grep("dimensions",raweset[1])) != 0)
+          stop(sprintf("%s \n This file may not be a binary cel file. \n", raweset[1]))
+        if(length(grep(".cel",files)) != 0 && length(grep("type",raweset[1])) != 0)
+          stop(sprintf("%s \n ArrayExpress package does not handle multiple chip types data sets yet. \n", raweset[1]))
+        
+        else
+          stop(sprintf(raweset[1]))
+
+      }
 
     return(raweset)
     

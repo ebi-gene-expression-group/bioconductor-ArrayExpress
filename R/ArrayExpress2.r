@@ -1,5 +1,6 @@
 ArrayExpress2 = function(input, tempoutdir = ".", save = FALSE)
   {
+    if(save) on.exit(file.remove(rawdata)) else on.exit({file.remove(rawdata);if(exists("allfiles")) file.remove(allfiles)})
     ## Building the link with the input name
     dir = gsub("^E-|-[0-9]{1,10}","",input)
     url = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment"
@@ -26,31 +27,36 @@ ArrayExpress2 = function(input, tempoutdir = ".", save = FALSE)
    
     ## Listing the expression files names
     allfiles = dir(tempoutdir, pattern = input)
-    notuse = grep(allfiles, pattern = "info.txt$|idf.txt$|processed|sdrf.txt$|.log$")
+
+    dircontent = dir(tempoutdir, pattern = input) #list all the files from the current directory
+    directories = which(file.info(dircontent)$isdir ==TRUE) #list the directories    
+    notuse = c(directories, grep(allfiles, pattern = "info.txt$|idf.txt$|processed|sdrf.txt$|.log$|RData|class|log"))
     if(length(notuse) != 0)
       files = allfiles[-notuse]
     if(length(notuse) == 0)
       files = allfiles
 
-    
     ## Building the S4 class object
     
     ## Create AffyBatch for Affymetrix data sets
     if(length(grep(".cel",files)) == length(files))
       {
         raweset = try(ReadAffy(filenames = paste(tempoutdir,files,sep="/")))
-        samples = paste(exp,".sdrf.txt",sep="")
-        ph = try(read.AnnotatedDataFrame(samples,row.names=NULL, blank.lines.skip = TRUE, fill=TRUE))
-        if(!inherits(ph, 'try-error'))
+        if(!inherits(raweset, 'try-error'))
           {
-            pData(ph) = pData(ph)[1:length(files),]
-            if(length(ph$Array.Data.File)==length(unique(ph$Array.Data.File)))
+            samples = paste(exp,".sdrf.txt",sep="")
+            ph = try(read.AnnotatedDataFrame(samples,row.names=NULL, blank.lines.skip = TRUE, fill=TRUE))
+            if(!inherits(ph, 'try-error'))
               {
-                rownames(pData(ph)) = ph$Array.Data.File
-                pData(ph) = pData(ph)[sampleNames(raweset),]
-                phenoData(raweset) = ph
-              } else {
-                warning(sprintf("Cannot attach phenoData to the object as the Array Data File column of the sdrf file contains duplicated elements.")) 
+                pData(ph) = pData(ph)[1:length(files),]
+                if(length(ph$Array.Data.File)==length(unique(ph$Array.Data.File)))
+                  {
+                    rownames(pData(ph)) = ph$Array.Data.File
+                    pData(ph) = pData(ph)[sampleNames(raweset),]
+                    phenoData(raweset) = ph
+                  } else {
+                    warning(sprintf("Cannot attach phenoData to the object as the Array Data File column of the sdrf file contains duplicated elements.")) 
+                  }
               }
           }
       }

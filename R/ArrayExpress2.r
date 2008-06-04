@@ -1,6 +1,6 @@
 ArrayExpress2 = function(input, tempoutdir = ".", save = FALSE)
   {
-    if(save) on.exit(file.remove(rawdata)) else on.exit({file.remove(rawdata);if(exists("allfiles")) file.remove(allfiles)})
+    if(save) on.exit(file.remove(rawdata)) else on.exit({file.remove(rawdata);try(file.remove(allfiles))})
     ## Building the link with the input name
     dir = gsub("^E-|-[0-9]{1,10}","",input)
     url = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment"

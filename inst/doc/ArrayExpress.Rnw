@@ -19,7 +19,7 @@
 
 \begin{document}
 
-\title{ Building AffyBatch objects from ArrayExpress datasets }
+\title{ Building R objects from ArrayExpress datasets }
 
 \author{Audrey Kauffmann}
 \maketitle
@@ -43,7 +43,7 @@ You need to be connected to Internet to have access to the database.
 
 \paragraph{Producing an R object}
 There are two arguments needed to call the \Rfunction{ArrayExpress} function. The first one is the name of the experiment you want to convert. This name must be a valid identifier of a \underline{raw} data set stored in ArrayExpress Repository. \Rpackage{ArrayExpress} does not convert \underline{preprocessed} data available on the Data Warehouse. The second one is the name of the directory in which the data are downloaded, these data are deleted after execution of the function.
-The function will convert the data set in a \Rclass{affyBatch} if the experiments are Affymetrix microarrays. It will soon handle other data types.
+The function will convert the data set in a \Rclass{affyBatch} if the experiments are Affymetrix microarrays.
 
 %
 <<loadlibs>>=

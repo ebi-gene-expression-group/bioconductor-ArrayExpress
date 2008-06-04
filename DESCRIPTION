@@ -1,9 +1,9 @@
 Package: ArrayExpress
 Title: Access the ArrayExpress Microarray Database at EBI and build Bioconductor data structures: ExpressionSet, AffyBatch, NChannelSet
-Version: 1.1.3
+Version: 1.1.5
 Author: Audrey Kauffmann
 Maintainer: Audrey Kauffmann <audrey@ebi.ac.uk>
-Depends: R (>= 2.6.0), Biobase (>= 1.15.13), affy, limma
+Depends: R (>= 2.6.0), Biobase (>= 1.15.13), affy, limma, Biostrings
 Description:  Access the ArrayExpress Repository at EBI and build Bioconductor data structures: ExpressionSet, AffyBatch, NChannelSet
 License: Artistic License 2.0
 biocViews: Microarray, DataImport, OneChannel, TwoChannel

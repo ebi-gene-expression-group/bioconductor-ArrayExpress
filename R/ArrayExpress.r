@@ -12,6 +12,7 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
 
     if(save) on.exit(file.remove(rawdata)) else on.exit({file.remove(rawdata);try(file.remove(allfiles))})
     ## Building the link with the input name
+    dircontentold = dir()[grep(input,dir())]
     dir = gsub("^E-|-[0-9]{1,10}","",input)
     url = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment"
     exp = paste(url,dir,input,input,sep="/")
@@ -31,10 +32,11 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
    
     ## Listing the expression files names
     allfiles = dir(tempoutdir, pattern = input)
+    allfiles= allfiles[!allfiles %in% dircontentold]
 
-    dircontent = dir(tempoutdir, pattern = input) #list all the files from the current directory
-    directories = which(file.info(dircontent)$isdir ==TRUE) #list the directories    
-    notuse = c(directories, grep(allfiles, pattern = "info.txt$|idf.txt$|processed|sdrf.txt$|.log$|RData|class|log"))
+    ##dircontent = dir(tempoutdir, pattern = input) #list all the files from the current directory
+    ##directories = which(file.info(dircontent)$isdir ==TRUE) #list the directories    
+    notuse = grep(allfiles, pattern = "info.txt$|idf.txt$|processed|sdrf.txt$|.log$|RData|class|log")
     if(length(notuse) != 0)
       files = allfiles[-notuse]
     if(length(notuse) == 0)
@@ -75,10 +77,10 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
     ## Non Affymetrix data
     if(length(grep(".cel",files)) == 0)
       {
-        system(paste("wc -l ", input, "-raw* > tempwcl",sep=""))
-        tw =  read.table("tempwcl",nrow=length(files),sep="E")
+        system(paste("wc -l ", input, "-raw* > tempwcl",input,sep=""))
+        tw =  read.table(paste("tempwcl",input,sep=""),nrow=length(files),sep="E")
         nlines = unique(tw[,1])
-        file.remove("tempwcl")    
+        file.remove(paste("tempwcl",input,sep=""))    
         if(length(nlines)>1)
           stop(sprintf("The files have different number of lines.")) 
           
@@ -156,7 +158,7 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
               {
                 columns = list(R=colnamesf[,1], G=colnamesf[,1])
                 ev = try(read.maimages(files=files, path=tempoutdir,columns=columns))
-                if(inherits(es, 'try-error'))
+                if(inherits(ev, 'try-error'))
                   stop(sprintf("Error in read.maimages: '%s'.", ev[1]))
                 raweset = build.es(ev,ph,files,raweset)
 

@@ -43,134 +43,29 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
       files = allfiles
     
     samples = paste(exp,".sdrf.txt",sep="")
-    ph = try(read.AnnotatedDataFrame(samples,row.names=NULL, blank.lines.skip = TRUE, fill=TRUE))
-
-    if(!inherits(ph, 'try-error'))
-      {
-        if(length(unique(pData(ph)$Array.Design.REF[pData(ph)$Array.Design.REF!=""])) != 1)
-          stop("Cannot handle multiple Array Design yet")
-      }
+    ph = try(read.AnnotatedDataFrame(samples,row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
 
     ## Building the S4 class object
-    
-    ## Create AffyBatch for Affymetrix data sets
     if(length(grep(".cel",files)) == length(files))
       {
-        raweset = try(ReadAffy(filenames = paste(tempoutdir,files,sep="/")))
-        if(!inherits(raweset, 'try-error'))
-          {
-            if(!inherits(ph, 'try-error'))
-              {
-                pData(ph) = pData(ph)[1:length(files),]
-                if(length(ph$Array.Data)==length(unique(ph$Array.Data)))
-                  {
-                    rownames(pData(ph)) = ph$Array.Data
-                    pData(ph) = pData(ph)[sampleNames(raweset),]
-                    phenoData(raweset) = ph
-                  } else {
-                    warning(sprintf("Cannot attach phenoData to the object as the Array Data File column of the sdrf file contains duplicated elements.")) 
-                  }
-              }
-          }
-      }
+        adr = unique(pData(ph)$Array.Design.REF)
+        adr = adr[adr!=""]
+        if(length(adr) == 1)
+          raweset = try(AB(i=1,input, tempoutdir, ph, adr))
+        if(length(adr) > 1)
+          raweset = try(lapply(seq_len(length(adr)), function(i) try(AB(i,input, tempoutdir, ph, adr))))
+      }    
    
     ## Non Affymetrix data
     if(length(grep(".cel",files)) == 0)
       {
-        system(paste("wc -l ", input, "-raw* > tempwcl",input,sep=""))
-        tw =  read.table(paste("tempwcl",input,sep=""),nrow=length(files),sep="E")
-        nlines = unique(tw[,1])
-        file.remove(paste("tempwcl",input,sep=""))    
-        if(length(nlines)>1)
-          stop(sprintf("The files have different number of lines.")) 
-          
-        url = "http://tab2mage.svn.sourceforge.net/viewvc/*checkout*/tab2mage/trunk/Tab2MAGE/lib/ArrayExpress/Datafile/QT_list.txt" 
-        
-        qt = read.table(url, sep = "\t", quote = "",
-          check.names = FALSE, fill = TRUE,
-          comment.char = "#",
-          stringsAsFactors =  FALSE) ##read the QT file
-        
-        scanners = grep(">>>",qt[,1],value=T) ## list all the scanner names
-        sl = grep(">>>",qt[,1]) ## list all the line numbers wherea scanner type starts
-        
-        ## Parsing the first line of the expression file
-        allcnames = scan(paste(tempoutdir,files[1],sep="/"),what="",nlines=1, sep="\t")
-        
-        ## Looking for the right column to use
-        scanname = allcnames[grep(":",allcnames)]
-        scanname = scanname[-grep("Database|Feature",scanname)]
-        pos = regexpr(":",scanname)[[1]]
-        st = letter(scanname,1:(pos-1))
-
-        if(!is.null(columns))
-          {
-            if(length(columns) == 1)
-              columnsn = list(G=columns,R=columns)
-            if(length(columns) > 1)
-              columnsn = columns
-            
-            ev = try(read.maimages(files=files, path=tempoutdir,columns=columnsn))
-            
-            if(inherits(ev, 'try-error'))
-              stop(sprintf("Error in read.maimages: '%s'.", ev[1]))
-            
-            if(length(columns) > 1)
-              raweset = build.ncs(ev,ph,files,raweset)
-            
-            if(length(columns) == 1)
-              raweset = build.es(ev,ph,files,raweset)
-          }
-        
-        if(is.null(columns))
-          {
-            if(length(grep("Unknown",unique(st))) != 0)
-              stop(sprintf("Scanner name is '%s'. This scanner type is not valid. \nTry to set the argument 'columns' by choosing among the following columns names: \n", unique(st)),sprintf("\"%s\" \n",scanname))
-            
-            if(length(unique(st)) != 1)
-              stop(sprintf("%s scanner names are given ( ",length(unique(st))), sprintf("\"%s\" ",unique(st)), sprintf("). It is not possible to handle such a case."))
-
-            gs = qt[((sl[grep(unique(st),scanners)]+1):(sl[grep(unique(st),scanners)+1]-1)),] ## extract the QTs of the specific scanner type
-            foreground = gs[(gs[,4]=="MeasuredSignal" & is.na(gs[,5])),c(1,7)] ## the colnames to use in the read.column
-            background = gs[(gs[,4]=="MeasuredSignal" & (gs[,5]==1)),c(1,7)] ## the colnames to use in the read.column
-            foreground[,1] = paste(unique(st),":",foreground[,1],sep="")
-            background[,1] = paste(unique(st),":",background[,1],sep="")
-        
-            colnamesf = foreground[which(foreground[,1] %in% allcnames),]
-            colnamesb = background[which(background[,1] %in% allcnames),]
-
-            df = dim(colnamesf)
-            db = dim(colnamesb)
-        
-            ## Building NChannelSet when two colours
-            if(df[1] == 2)
-              {
-                columns = if(db[1] == 2) list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1],Rb=colnamesb[colnamesb[,2]=="Cy5",1], Gb=colnamesb[colnamesb[,2]=="Cy3",1]) else list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1])
-                ev = try(read.maimages(files=files, path=tempoutdir,columns=columns))
-                if(inherits(ev, 'try-error'))
-                  stop(sprintf("Error in read.maimages: '%s'.", ev[1]))
-                raweset = build.ncs(ev,ph,files,raweset)
-
-              }
-
-            ## Building ExpressionSet when one colour
-            if(df[1] == 1)
-              {
-                columns = list(R=colnamesf[,1], G=colnamesf[,1])
-                ev = try(read.maimages(files=files, path=tempoutdir,columns=columns))
-                if(inherits(ev, 'try-error'))
-                  stop(sprintf("Error in read.maimages: '%s'.", ev[1]))
-                raweset = build.es(ev,ph,files,raweset)
-
-              }
-
-            if(df[1] == 0)
-              stop(sprintf("None of the columns names of the expression files is matching a valid known quantitation type.\nTry to set the argument 'columns' by choosing among the following columns names: \n"), sprintf("\"%s\" \n",scanname))
-            if(df[1] > 2)
-              stop(sprintf("There are too many columns to be read in the files. The R object cannot be created."))
-          }
-      }#end of non Affymetrix objects
-
+        adr = unique(pData(ph)$Array.Design.REF)
+        adr = adr[adr!=""]
+        if(length(adr) == 1)
+          raweset = try(nonAB(i=1,input, tempoutdir, ph, columns, adr))
+        if(length(adr) > 1)
+          raweset = try(lapply(seq_len(length(adr)), function(i) try(nonAB(i,input, tempoutdir, ph, columns, adr))))
+      }    
     return(raweset)
     
   }#end of ArrayExpress
@@ -244,4 +139,135 @@ assign.pheno.ncs = function(ph,files,raweset)
     return(raweset)
   }
 
+
+## Create AffyBatch for Affymetrix data sets
+AB = function(i,input, tempoutdir, ph, adr)
+  {
+    pht = pData(ph)
+    files = pht[pht$Array.Design.REF==adr[i],"Array.Data.File"]
+    pht = ph[pht[,"Array.Design.REF"]==adr[i],]
+    raweset = try(ReadAffy(filenames = paste(tempoutdir,unique(files),sep="/")))
+    if(!inherits(raweset, 'try-error'))
+      {
+        if(!inherits(ph, 'try-error'))
+          {
+            pData(ph) = pData(ph)[1:length(files),]
+            if(length(ph$Array.Data)==length(unique(ph$Array.Data)))
+              {
+                rownames(pData(ph)) = ph$Array.Data
+                pData(ph) = pData(ph)[sampleNames(raweset),]
+                phenoData(raweset) = ph
+              } else {
+                warning(sprintf("Cannot attach phenoData to the object as the Array Data File column of the sdrf file contains duplicated elements.")) 
+              }              
+          }
+      }
+    return(raweset)
+  }
+
+## Create NCS or ES for non Affymetrix data sets
+nonAB = function(i, input, tempoutdir, ph, columns, adr)
+  {
+    pht = pData(ph)
+    files = pht[pht$Array.Design.REF==adr[i],"Array.Data.Matrix.File"]
+    pht = ph[pht[,"Array.Design.REF"]==adr[i],]
+    f = files[1]
+    for(j in 2:length(files))
+      f = paste(f,files[j],sep=" ")
+      
+    system(paste("wc -l ", f, " > tempwcl",input,sep=""))
+      
+    tw =  read.table(paste("tempwcl",input,sep=""),nrow=length(files),sep="E")
+    nlines = unique(tw[,1])
+    file.remove(paste("tempwcl",input,sep=""))    
+    if(length(nlines)>1)
+      stop(sprintf("The files have different number of lines.")) 
+          
+    url = "http://tab2mage.svn.sourceforge.net/viewvc/*checkout*/tab2mage/trunk/Tab2MAGE/lib/ArrayExpress/Datafile/QT_list.txt" 
+        
+    qt = read.table(url, sep = "\t", quote = "",
+      check.names = FALSE, fill = TRUE,
+      comment.char = "#",               #
+      stringsAsFactors =  FALSE) ##read the QT file
+        
+    scanners = grep(">>>",qt[,1],value=T) ## list all the scanner names
+    sl = grep(">>>",qt[,1]) ## list all the line numbers wherea scanner type starts
+        
+    ## Parsing the first line of the expression file
+    allcnames = scan(paste(tempoutdir,files[1],sep="/"),what="",nlines=1, sep="\t")
+        
+    ## Looking for the right column to use
+    scanname = allcnames[grep(":",allcnames)]
+    scanname = scanname[-grep("Database|Feature|Reporter",scanname)]
+    pos = regexpr(":",scanname)[[1]]
+    st = letter(scanname,1:(pos-1))
+
+    if(!is.null(columns))
+      {
+        if(length(columns) == 1)
+          columnsn = list(G=columns,R=columns)
+        if(length(columns) > 1)
+          columnsn = columns
+            
+        ev = try(read.maimages(files=unique(files), path=tempoutdir,columns=columnsn))
+            
+        if(inherits(ev, 'try-error'))
+          stop(sprintf("Error in read.maimages: %s The files have probably different columns header.", ev[1]))
+            
+        if(length(columns) > 1)
+          raweset = build.ncs(ev,pht,files,raweset)
+            
+        if(length(columns) == 1)
+          raweset = build.es(ev,pht,files,raweset)
+      }
+        
+    if(is.null(columns))
+      {
+        if(length(grep("Unknown",unique(st))) != 0)
+          stop(sprintf("Scanner name is '%s'. This scanner type is not valid. \nTry to set the argument 'columns' by choosing among the following columns names: \n", unique(st)),sprintf("\"%s\" \n",scanname))
+            
+        if(length(unique(st)) != 1)
+          stop(sprintf("%s scanner names are given ( ",length(unique(st))), sprintf("\"%s\" ",unique(st)), sprintf("). It is not possible to handle such a case."))
+
+        gs = qt[((sl[grep(unique(st),scanners)]+1):(sl[grep(unique(st),scanners)+1]-1)),] ## extract the QTs of the specific scanner type
+        foreground = gs[(gs[,4]=="MeasuredSignal" & is.na(gs[,5])),c(1,7)] ## the colnames to use in the read.column
+        background = gs[(gs[,4]=="MeasuredSignal" & (gs[,5]==1)),c(1,7)] ## the colnames to use in the read.column
+        foreground[,1] = paste(unique(st),":",foreground[,1],sep="")
+        background[,1] = paste(unique(st),":",background[,1],sep="")
+        
+        colnamesf = foreground[which(foreground[,1] %in% allcnames),]
+        colnamesb = background[which(background[,1] %in% allcnames),]
+
+        df = dim(colnamesf)
+        db = dim(colnamesb)
+        
+        ## Building NChannelSet when two colours
+        if(df[1] == 2)
+          {
+            columns = if(db[1] == 2) list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1],Rb=colnamesb[colnamesb[,2]=="Cy5",1], Gb=colnamesb[colnamesb[,2]=="Cy3",1]) else list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1])
+            ev = try(read.maimages(files=unique(files), path=tempoutdir,columns=columns))
+            if(inherits(ev, 'try-error'))
+              stop(sprintf("Error in read.maimages: '%s'.", ev[1]))
+            raweset = build.ncs(ev,pht,files,raweset)
+
+          }
+
+        ## Building ExpressionSet when one colour
+        if(df[1] == 1)
+          {
+            columns = list(R=colnamesf[,1], G=colnamesf[,1])
+            ev = try(read.maimages(files=unique(files), path=tempoutdir,columns=columns))
+            if(inherits(ev, 'try-error'))
+              stop(sprintf("Error in read.maimages: '%s'.", ev[1]))
+            raweset = build.es(ev,pht,files,raweset)
+
+          }
+
+        if(df[1] == 0)
+          stop(sprintf("None of the columns names of the expression files is matching a valid known quantitation type.\nTry to set the argument 'columns' by choosing among the following columns names: \n"), sprintf("\"%s\" \n",scanname))
+        if(df[1] > 2)
+          stop(sprintf("There are too many columns that could be read in the files.\n Try to set the argument 'columns' by choosing among the following columns names: \n"),sprintf("\"%s\" \n",scanname))
+     }
+    return(raweset)
+  }#end of non Affymetrix objects
 

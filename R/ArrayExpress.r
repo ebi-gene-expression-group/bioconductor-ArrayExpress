@@ -14,6 +14,8 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
     ## Building the link with the input name
     dircontentold = dir()[grep(input,dir())]
     dir = gsub("^E-|-[0-9]{1,10}","",input)
+    if(nchar(dir) == 5)
+      dir = gsub("[a-z]$","",dir)
     url = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment"
     exp = paste(url,dir,input,input,sep="/")
     raw = paste(exp,".raw.zip",sep="")
@@ -169,8 +171,12 @@ AB = function(i,input, tempoutdir, ph, adr)
 nonAB = function(i, input, tempoutdir, ph, columns, adr)
   {
     pht = pData(ph)
+    if(!"Array.Data.Matrix.File" %in% colnames(pht))
+      stop("Cannot find array data file names in the sdrf file.")
     files = pht[pht$Array.Design.REF==adr[i],"Array.Data.Matrix.File"]
     pht = ph[pht[,"Array.Design.REF"]==adr[i],]
+    if(length(unique(pht$Label)) == 2 && (nrow(pht) == length(unique(files))))
+      stop("Dyes are in different files.")
     f = files[1]
     for(j in 2:length(files))
       f = paste(f,files[j],sep=" ")
@@ -198,7 +204,10 @@ nonAB = function(i, input, tempoutdir, ph, columns, adr)
         
     ## Looking for the right column to use
     scanname = allcnames[grep(":",allcnames)]
-    scanname = scanname[-grep("Database|Feature|Reporter",scanname)]
+    scanname = scanname[-grep("Database|Reporter",scanname)] ##Feature is a problem because of Feature Extraction
+    f= grep("Feature",scanname)
+    fe = grep("Feature Extraction",scanname)
+    scanname = scanname[-f[!f %in% fe]]
     pos = regexpr(":",scanname)[[1]]
     st = letter(scanname,1:(pos-1))
 

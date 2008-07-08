@@ -47,11 +47,15 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
     samples = paste(exp,".sdrf.txt",sep="")
     ph = try(read.AnnotatedDataFrame(samples,row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
 
+    if(length(files) > nrow(pData(ph)[!pData(ph)$Source.Name=="",]))
+      stop("Some files from the zip archive do not have annotation in the sdrf file.")
+    
+    adr = unique(pData(ph)$Array.Design.REF)
+    adr = adr[adr!=""]
+
     ## Building the S4 class object
     if(length(grep(".cel",files)) == length(files))
       {
-        adr = unique(pData(ph)$Array.Design.REF)
-        adr = adr[adr!=""]
         if(length(adr) == 1)
           raweset = try(AB(i=1,input, tempoutdir, ph, adr))
         if(length(adr) > 1)
@@ -61,8 +65,6 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
     ## Non Affymetrix data
     if(length(grep(".cel",files)) == 0)
       {
-        adr = unique(pData(ph)$Array.Design.REF)
-        adr = adr[adr!=""]
         if(length(adr) == 1)
           raweset = try(nonAB(i=1,input, tempoutdir, ph, columns, adr))
         if(length(adr) > 1)
@@ -236,7 +238,7 @@ nonAB = function(i, input, tempoutdir, ph, columns, adr)
           stop(sprintf("Scanner name is '%s'. This scanner type is not valid. \nTry to set the argument 'columns' by choosing among the following columns names: \n", unique(st)),sprintf("\"%s\" \n",scanname))
             
         if(length(unique(st)) != 1)
-          stop(sprintf("%s scanner names are given ( ",length(unique(st))), sprintf("\"%s\" ",unique(st)), sprintf("). It is not possible to handle such a case."))
+          stop(sprintf("%s scanner names are given ( ",length(unique(st))), sprintf("\"%s\" ",unique(st)), sprintf("). It is not possible to handle such a case. Try to set the argument 'columns' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",scanname))
 
         gs = qt[((sl[grep(unique(st),scanners)]+1):(sl[grep(unique(st),scanners)+1]-1)),] ## extract the QTs of the specific scanner type
         foreground = gs[(gs[,4]=="MeasuredSignal" & is.na(gs[,5])),c(1,7)] ## the colnames to use in the read.column
@@ -256,7 +258,7 @@ nonAB = function(i, input, tempoutdir, ph, columns, adr)
             columns = if(db[1] == 2) list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1],Rb=colnamesb[colnamesb[,2]=="Cy5",1], Gb=colnamesb[colnamesb[,2]=="Cy3",1]) else list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1])
             ev = try(read.maimages(files=unique(files), path=tempoutdir,columns=columns))
             if(inherits(ev, 'try-error'))
-              stop(sprintf("Error in read.maimages: '%s'.", ev[1]))
+              stop(sprintf("Error in read.maimages: %s", ev[1]))
             raweset = build.ncs(ev,pht,files,raweset)
 
           }
@@ -267,7 +269,7 @@ nonAB = function(i, input, tempoutdir, ph, columns, adr)
             columns = list(R=colnamesf[,1], G=colnamesf[,1])
             ev = try(read.maimages(files=unique(files), path=tempoutdir,columns=columns))
             if(inherits(ev, 'try-error'))
-              stop(sprintf("Error in read.maimages: '%s'.", ev[1]))
+              stop(sprintf("Error in read.maimages: %s", ev[1]))
             raweset = build.es(ev,pht,files,raweset)
 
           }

@@ -11,8 +11,9 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
       }
 
     if(save) on.exit(file.remove(rawdata)) else on.exit({file.remove(rawdata);try(file.remove(allfiles))})
+    
     ## Building the link with the input name
-    dircontentold = dir()[grep(input,dir())]
+    ##dircontentold = dir()[grep(input,dir())]
     dir = gsub("^E-|-[0-9]{1,10}","",input)
     if(nchar(dir) == 5)
       dir = gsub("[a-z]$","",dir)
@@ -30,11 +31,11 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
       stop(paste(raw, " is empty. \n"),sep="")
     
     ## Extracting the data if the checking was fine
-    extract.zip(file = rawdata)
+    allfiles = extract.zip(file = rawdata)
    
     ## Listing the expression files names
-    allfiles = dir(tempoutdir, pattern = input)
-    allfiles= allfiles[!allfiles %in% dircontentold]
+    ##allfiles = dir(tempoutdir, pattern = input)
+    ##allfiles= allfiles[!allfiles %in% dircontentold]
 
     ##dircontent = dir(tempoutdir, pattern = input) #list all the files from the current directory
     ##directories = which(file.info(dircontent)$isdir ==TRUE) #list the directories    
@@ -46,40 +47,62 @@ ArrayExpress = function(input, tempoutdir = ".", save = FALSE, columns = NULL)
     
     samples = paste(exp,".sdrf.txt",sep="")
     ph = try(read.AnnotatedDataFrame(samples,row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
+        
+    if(inherits(ph, 'try-error') && length(grep(".cel",files)) == 0)
+      stop(sprintf("No sdrf file available. The object cannot be built."))
+    if(inherits(ph, 'try-error') && length(grep(".cel",files)) != 0)
+      {
+        warning(sprintf("No sdrf file available. The object may not be built."))
+        adr = "Empty"
+        raweset = try(AB(i=1,input, files, tempoutdir, ph, adr))
 
-    if(length(files) > nrow(pData(ph)[!pData(ph)$Source.Name=="",]))
-      stop("Some files from the zip archive do not have annotation in the sdrf file.")
+      }
+    if(!inherits(ph, 'try-error'))
+      {
+        emptylines = which(sapply(seq_len(nrow(pData(ph))), function(i)
+          all(pData(ph)[i,]=="",na.rm=T)))
+        if(length(emptylines) != 0)
+          pData(ph) = pData(ph)[-emptylines,]
+        ##pData(ph) = pData(ph)[!pData(ph)$Array.Data=="",]
     
-    adr = unique(pData(ph)$Array.Design.REF)
-    adr = adr[adr!=""]
+        if(!all(files %in% pData(ph)$Array.Data))
+          warning("Some files from the zip archive do not have annotation in the sdrf file. The object may not be built.")
 
+        adr = unique(pData(ph)$Array.Design.REF)
+        adr = adr[adr!=""]
+        if((length(adr) == 0 || is.na(adr)) && length(grep(".cel",files)) != 0)
+          warning("Cannot find the array design reference in the sdrf file. The object may not be built.")
+         if((length(adr) == 0 || is.na(adr)) && length(grep(".cel",files)) == 0)
+          stop("Cannot find the array design reference in the sdrf file. The object cannot be built.")
+     }
+    
     ## Building the S4 class object
     if(length(grep(".cel",files)) == length(files))
       {
         if(length(adr) == 1)
-          raweset = try(AB(i=1,input, tempoutdir, ph, adr))
+          raweset = try(AB(i=1,input, files, tempoutdir, ph, adr))
+
         if(length(adr) > 1)
-          raweset = try(lapply(seq_len(length(adr)), function(i) try(AB(i,input, tempoutdir, ph, adr))))
-      }    
+          raweset = try(lapply(seq_len(length(adr)), function(i) try(AB(i,input, files, tempoutdir, ph, adr))))
+      }
    
     ## Non Affymetrix data
     if(length(grep(".cel",files)) == 0)
       {
         if(length(adr) == 1)
-          raweset = try(nonAB(i=1,input, tempoutdir, ph, columns, adr))
+          raweset = try(nonAB(i=1,input, files, tempoutdir, ph, columns, adr))
         if(length(adr) > 1)
-          raweset = try(lapply(seq_len(length(adr)), function(i) try(nonAB(i,input, tempoutdir, ph, columns, adr))))
+          raweset = try(lapply(seq_len(length(adr)), function(i) try(nonAB(i,input, files, tempoutdir, ph, columns, adr))))
       }    
     return(raweset)
-    
   }#end of ArrayExpress
 
 
 ## Build NChannelSet
 build.ncs = function(ev,ph,files,raweset)
   {
-    assayData = with(ev, assayDataNew(R=R, G=G, Rb=Rb, Gb=Gb))
-    
+    assayData = if("Rb" %in% names(ev))with(ev, assayDataNew(R=R, G=G, Rb=Rb, Gb=Gb)) else with(ev, assayDataNew(R=R, G=G))
+
     raweset = try(new("NChannelSet", assayData = assayData))
 
     if(inherits(raweset, 'try-error'))
@@ -145,12 +168,25 @@ assign.pheno.ncs = function(ph,files,raweset)
 
 
 ## Create AffyBatch for Affymetrix data sets
-AB = function(i,input, tempoutdir, ph, adr)
+AB = function(i,input, files, tempoutdir, ph, adr)
   {
-    pht = pData(ph)
-    files = pht[pht$Array.Design.REF==adr[i],"Array.Data.File"]
-    pht = ph[pht[,"Array.Design.REF"]==adr[i],]
-    raweset = try(ReadAffy(filenames = paste(tempoutdir,unique(files),sep="/")))
+    if(adr == "Empty" || is.na(adr))
+      {
+        files = files[files!=""]
+        raweset = try(ReadAffy(filenames = paste(tempoutdir,unique(files),sep="/")))
+      } else {  
+        pht = pData(ph)
+        if(!"Array.Data.File" %in% colnames(pht))
+          warning("Cannot find array data file names in the sdrf file. The object may not be built.")
+    
+        if(length(pht[pht$Array.Design.REF==adr[i],"Array.Data.File"]!="")==0)
+          warning("Cannot find array data file names in the sdrf file. The object may not be built.") else files = pht[pht$Array.Design.REF==adr[i],"Array.Data.File"]
+     
+        files = files[files!=""]
+
+        pht = ph[pht[,"Array.Design.REF"]==adr[i],]
+        raweset = try(ReadAffy(filenames = paste(tempoutdir,unique(files),sep="/")))
+      }
     if(!inherits(raweset, 'try-error'))
       {
         if(!inherits(ph, 'try-error'))
@@ -170,49 +206,61 @@ AB = function(i,input, tempoutdir, ph, adr)
   }
 
 ## Create NCS or ES for non Affymetrix data sets
-nonAB = function(i, input, tempoutdir, ph, columns, adr)
+nonAB = function(i, input, files, tempoutdir, ph, columns, adr)
   {
     pht = pData(ph)
     if(!"Array.Data.Matrix.File" %in% colnames(pht))
-      stop("Cannot find array data file names in the sdrf file.")
-    files = pht[pht$Array.Design.REF==adr[i],"Array.Data.Matrix.File"]
-    pht = ph[pht[,"Array.Design.REF"]==adr[i],]
-    if(length(unique(pht$Label)) == 2 && (nrow(pht) == length(unique(files))))
-      stop("Dyes are in different files.")
-    f = files[1]
-    for(j in 2:length(files))
-      f = paste(f,files[j],sep=" ")
-      
-    system(paste("wc -l ", f, " > tempwcl",input,sep=""))
-      
-    tw =  read.table(paste("tempwcl",input,sep=""),nrow=length(files),sep="E")
-    nlines = unique(tw[,1])
-    file.remove(paste("tempwcl",input,sep=""))    
-    if(length(nlines)>1)
-      stop(sprintf("The files have different number of lines.")) 
-          
-    url = "http://tab2mage.svn.sourceforge.net/viewvc/*checkout*/tab2mage/trunk/Tab2MAGE/lib/ArrayExpress/Datafile/QT_list.txt" 
+      warning("Cannot find array data file names in the sdrf file. The object may not be built.")
+
+
+    if(length(pht[pht$Array.Design.REF==adr[i],"Array.Data.Matrix.File"]!="")==0)
+      warning("Cannot find array data file names in the sdrf file. The object may not be built.") else files = pht[pht$Array.Design.REF==adr[i],"Array.Data.Matrix.File"]
+     
+    files = files[files!=""]
+    pht = ph[pht$Array.Design.REF==adr[i],]
+  
+    url2 = "http://tab2mage.svn.sourceforge.net/viewvc/*checkout*/tab2mage/trunk/Tab2MAGE/lib/ArrayExpress/Datafile/QT_list.txt" 
         
-    qt = read.table(url, sep = "\t", quote = "",
+    qt = try(read.table(url2, sep = "\t", quote = "",
       check.names = FALSE, fill = TRUE,
-      comment.char = "#",               #
-      stringsAsFactors =  FALSE) ##read the QT file
+      comment.char = "#",               
+      stringsAsFactors =  FALSE)) ##read the QT file from the web
+    if(inherits(qt, 'try-error'))
+      qt = try(read.table(
+        file.path(system.file("doc", package="ArrayExpress"),"QT_list.txt"),
+        sep = "\t", quote = "",
+        check.names = FALSE, fill = TRUE,
+        comment.char = "#",               
+        stringsAsFactors =  FALSE)) ##read the QT file from the package
+
         
     scanners = grep(">>>",qt[,1],value=T) ## list all the scanner names
     sl = grep(">>>",qt[,1]) ## list all the line numbers wherea scanner type starts
-        
+    scanners = gsub(">","",scanners)
+    
     ## Parsing the first line of the expression file
     allcnames = scan(paste(tempoutdir,files[1],sep="/"),what="",nlines=1, sep="\t")
         
     ## Looking for the right column to use
     scanname = allcnames[grep(":",allcnames)]
-    scanname = scanname[-grep("Database|Reporter",scanname)] ##Feature is a problem because of Feature Extraction
-    f= grep("Feature",scanname)
+    if(length(grep("Database|Reporter",scanname)) != 0)
+      scanname = scanname[-grep("Database|Reporter",scanname)] ##Feature is a problem because of Feature Extraction
+    feature = grep("Feature",scanname)
     fe = grep("Feature Extraction",scanname)
-    scanname = scanname[-f[!f %in% fe]]
-    pos = regexpr(":",scanname)[[1]]
-    st = letter(scanname,1:(pos-1))
+    if(length(feature) != 0)
+      scanname = scanname[-feature[!feature %in% fe]]
+    if(is.null(columns) && length(scanname) == 0)
+      stop(sprintf("No scanner name is given. It is not possible to handle such a case. Try to set the argument 'columns' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",allcnames))
 
+    st = unique(sapply(seq_len(length(scanname)), function(i) strsplit(scanname,":")[[i]][1]))
+    
+    #tw =  read.table(paste("tempwcl",input,sep=""),nrow=length(files),sep="E")
+    #nlines = unique(tw[,1])
+    #file.remove(paste("tempwcl",input,sep=""))    
+    #if(length(nlines)>1)
+      #stop(sprintf("The files have different number of lines."))         
+
+    
     if(!is.null(columns))
       {
         if(length(columns) == 1)
@@ -234,35 +282,50 @@ nonAB = function(i, input, tempoutdir, ph, columns, adr)
         
     if(is.null(columns))
       {
-        if(length(grep("Unknown",unique(st))) != 0)
-          stop(sprintf("Scanner name is '%s'. This scanner type is not valid. \nTry to set the argument 'columns' by choosing among the following columns names: \n", unique(st)),sprintf("\"%s\" \n",scanname))
+        if(length(grep(st, scanners)) == 0)
+          stop(sprintf("Scanner name is '%s'. This scanner type is not valid. \nTry to set the argument 'columns' by choosing among the following columns names: \n", st),sprintf("\"%s\" \n",scanname))
             
-        if(length(unique(st)) != 1)
-          stop(sprintf("%s scanner names are given ( ",length(unique(st))), sprintf("\"%s\" ",unique(st)), sprintf("). It is not possible to handle such a case. Try to set the argument 'columns' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",scanname))
-
-        gs = qt[((sl[grep(unique(st),scanners)]+1):(sl[grep(unique(st),scanners)+1]-1)),] ## extract the QTs of the specific scanner type
-        foreground = gs[(gs[,4]=="MeasuredSignal" & is.na(gs[,5])),c(1,7)] ## the colnames to use in the read.column
-        background = gs[(gs[,4]=="MeasuredSignal" & (gs[,5]==1)),c(1,7)] ## the colnames to use in the read.column
-        foreground[,1] = paste(unique(st),":",foreground[,1],sep="")
-        background[,1] = paste(unique(st),":",background[,1],sep="")
+        if(length(st) != 1)
+          stop(sprintf("%s scanner names are given ( ",length(st)), sprintf("\"%s\" ",st), sprintf("). It is not possible to handle such a case. Try to set the argument 'columns' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",scanname))
         
-        colnamesf = foreground[which(foreground[,1] %in% allcnames),]
-        colnamesb = background[which(background[,1] %in% allcnames),]
+        if(length(grep(st, scanners)) > 1)
+          stop(sprintf("Scanner name can be '%s'. \nTry to set the argument 'columns' by choosing among the following columns names: \n", scanners[grep(st, scanners)]),sprintf("\"%s\" \n",scanname))
+            
+        gs = qt[((sl[grep(st,scanners)]+1):(sl[grep(st,scanners)+1]-1)),] ## extract the QTs of the specific scanner type
+        foreground = gs[(gs[,4]=="MeasuredSignal" & (is.na(gs[,5]) | gs[,5]==0)),c(1,7)] ## the colnames to use in the read.column
+        background = gs[(gs[,4]=="MeasuredSignal" & (gs[,5]==1)),c(1,7)] ## the colnames to use in the read.column
 
-        df = dim(colnamesf)
-        db = dim(colnamesb)
+        foreground[,1] = paste(st,":",foreground[,1],sep="")
+        colnamesf = foreground[which(foreground[,1] %in% allcnames),]
+        df = dim(colnamesf)        
+
+        if(dim(background)[1] != 0)
+          {
+            background[,1] = paste(st,":",background[,1],sep="")
+            colnamesb = background[which(background[,1] %in% allcnames),]
+            db = dim(colnamesb)
+          } else db = 0
+
+        if(length(files) != 1)
+          {
+            if(!all(sapply(2:length(files), function(i) readLines(files[1],1)==readLines(files[i],1))))
+              warning(sprintf("The files do not all have the same headings whereas the array design is the same. It may cause the object not being created."))
+          }
         
         ## Building NChannelSet when two colours
         if(df[1] == 2)
           {
             columns = if(db[1] == 2) list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1],Rb=colnamesb[colnamesb[,2]=="Cy5",1], Gb=colnamesb[colnamesb[,2]=="Cy3",1]) else list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1])
+            
+            if(length(columns) == 0 || (0 %in% sapply(seq_len(length(columns)), function(i) length(columns[[i]]))))
+              stop(sprintf("The known column names for this scanner are not in the heading of the files.\nTry to set the argument 'columns' by choosing among the following columns names: \n"),sprintf("\"%s\" \n",scanname))
+
             ev = try(read.maimages(files=unique(files), path=tempoutdir,columns=columns))
             if(inherits(ev, 'try-error'))
-              stop(sprintf("Error in read.maimages: %s", ev[1]))
+              stop(sprintf("Error in read.maimages: %s.", ev[1]))
             raweset = build.ncs(ev,pht,files,raweset)
-
           }
-
+        
         ## Building ExpressionSet when one colour
         if(df[1] == 1)
           {

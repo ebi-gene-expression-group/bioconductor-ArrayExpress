@@ -10,21 +10,24 @@ extract.zip = function (file, unzip = getOption("unzip")) {
       list = paste(unzip, "-l", file)
       cmd = paste(unzip, "-oq", file, " -d ", path)
       if (.Platform$OS.type == "windows")
-        {
-          rc = system(list, intern=T, invisible = TRUE)##does it work?
-          rc = sapply(4:(length(rc)-2), function(i) strsplit(rc,"   ")[[i]][2])
+	{
+          rc = try(system(list, intern=T))
+          if(inherits(rc,"try-error"))
+            stop("Cannot extract the files the downloaded archive. Please install unzip on your machine")   
+          rc = paste("E-",na.omit(sapply(1:length(rc), function(i) strsplit(rc," E-")[[i]][2])),sep="")
           res = system(cmd, invisible = TRUE)
-        } else {
+	} else {
           rc = system(list, intern=T)##works
-          rc = paste("E-",sapply(4:(length(rc)-2), function(i) strsplit(rc," E-")[[i]][2]),sep="")
+          rc = paste("E-",na.omit(sapply(1:length(rc), function(i) strsplit(rc," E-")[[i]][2])),sep="")
           res = system(paste(cmd, "> /dev/null"))
         }
     }
     else {
       rc = .Internal(int.unzip(file.path(path, topic),NULL, path)) ##works
       rc = attr(rc,"extracted")
+      rc = paste("E-",na.omit(sapply(1:length(rc), function(i) strsplit(rc,"E-")[[i]][2])),sep="")
     }
   } else stop(sprintf("%s does not exist",file.path(path, topic)))
-
+  
   return(rc)
 }

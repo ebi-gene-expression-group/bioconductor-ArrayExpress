@@ -12,7 +12,9 @@
 ArrayExpress(input, tempoutdir = ".", save = FALSE, columns = NULL)
 }
 \arguments{
-  \item{input}{ an ArrayExpress identifier of an Affymetrix experiment.}
+  \item{input}{ an ArrayExpress identifier of an experiment for which
+    the raw data are available. The package currently covers 96% of the
+    raw data sets of the database.}
   \item{tempoutdir}{ the name of the directory in which the files
     downloaded on the ArrayExpress repository will be extracted. The
     default is the current directory.}

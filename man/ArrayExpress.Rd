@@ -43,11 +43,9 @@ ArrayExpress(input, tempoutdir = ".", save = FALSE, columns = NULL)
   Maintainer: <audrey@ebi.ac.uk>  
 }
 \examples{
-  \dontrun{
 ETABM25.affybatch = ArrayExpress("E-TABM-25")
 print(ETABM25.affybatch)
 sampleNames(ETABM25.affybatch)
 colnames(pData(ETABM25.affybatch))
-}
 }
 \keyword{datasets}

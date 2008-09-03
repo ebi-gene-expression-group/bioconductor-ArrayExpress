@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{ArrayExpress}
+%\VignetteIndexEntry{ArrayExpress: Import and convert ArrayExpress data sets into R object}
 %\VignetteDepends{Biobase}
 %\VignetteKeywords{ImportData}
 %\VignettePackage{ArrayExpress}

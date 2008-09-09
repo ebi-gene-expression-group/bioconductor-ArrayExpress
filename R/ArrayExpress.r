@@ -132,7 +132,7 @@ build.es = function(ev,ph,files,raweset)
     if(!inherits(ph, 'try-error'))
       {
         pData(ph) = pData(ph)[1:length(files),]
-        if(length(ph$Array.Data)==length(unique(ph$Array.Data)))
+        if(!is.null(ph$Array.Data) && (length(ph$Array.Data)==length(unique(ph$Array.Data))))
           {
             rownames(pData(ph)) = gsub(".[a-z][a-z][a-z]$","",ph$Array.Data)
             pData(ph) = pData(ph)[sampleNames(raweset),]

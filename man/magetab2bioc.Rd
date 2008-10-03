@@ -7,7 +7,7 @@
   ExpressionSet or a NChannelSet.
 }
 \usage{
-magetab2bioc(rawfiles, sdrf, idf, path = ".", columns = NULL, save = TRUE)
+magetab2bioc(rawfiles, sdrf, idf, path = ".", rawcol = NULL, save = TRUE)
 }
 \arguments{
   \item{rawfiles}{ all the expression files to use to create the object.
@@ -15,10 +15,10 @@ magetab2bioc(rawfiles, sdrf, idf, path = ".", columns = NULL, save = TRUE)
   \item{sdrf}{ the sdrf file from MAGE-TAB. }
   \item{idf}{ the idf file from MAGE-TAB. }
   \item{path}{ is the name of the directory in which the files downloaded on the ArrayExpress repository will be extracted.}
-  \item{columns}{ by default, the columns are automatically selected
+  \item{rawcol}{ by default, the columns are automatically selected
     according to the scanner type. If the scanner is unknown or if the
     user wants to use different columns than the default, the argument
-    'columns' can be set. For two colour arrays it must be a list with
+    'rawcol' can be set. For two colour arrays it must be a list with
     the fields 'R', 'G', 'Rb' and 'Gb' giving the column names to be
     used for red and green foreground and background. For one colour
     arrays, it must be a character string with the column name to be
@@ -38,7 +38,7 @@ magetab2bioc(rawfiles, sdrf, idf, path = ".", columns = NULL, save = TRUE)
   If several array designs are used in the data set, the output is a
   list with an object for each array design.  
 }
-\seealso{\code{\link{getAE}}, \code{\link{ArrayExpress}}, \code{\link{AEproc2bioc}}}
+\seealso{\code{\link{queryAE}}, \code{\link{getAE}}, \code{\link{ArrayExpress}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

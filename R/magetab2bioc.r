@@ -1,11 +1,11 @@
-magetab2bioc = function(rawfiles, sdrf, idf, path = ".", columns = NULL, save = TRUE) {
-  if(!is.null(columns))
+magetab2bioc = function(rawfiles, sdrf, idf, path = ".", rawcol = NULL, save = TRUE) {
+  if(!is.null(rawcol))
     {
-      if(length(columns) > 1 && !is(columns,"list"))
-        stop("The argument 'columns' must be a list if multiple column name are given.")
-      if(length(columns) == 1 && !is(columns,"character"))
-        stop("The argument 'columns' must be a character if one column name is given.")
-      if(is(columns,"list") && !("R" %in% names(columns) && "G" %in% names(columns)))
+      if(length(rawcol) > 1 && !is(rawcol,"list"))
+        stop("The argument 'rawcol' must be a list if multiple column name are given.")
+      if(length(rawcol) == 1 && !is(rawcol,"character"))
+        stop("The argument 'rawcol' must be a character if one column name is given.")
+      if(is(rawcol,"list") && !("R" %in% names(rawcol) && "G" %in% names(rawcol)))
         stop("The names of the columns must contain R and G.")
     }
 
@@ -60,15 +60,13 @@ magetab2bioc = function(rawfiles, sdrf, idf, path = ".", columns = NULL, save = 
   if(length(grep(".cel",files)) == 0)
     {
       if(length(adr) == 1)
-        raweset = try(nonAB(i=1, files, path, ph, columns, adr))
+        raweset = try(nonAB(i=1, files, path, ph, rawcol, adr))
       if(length(adr) > 1)
-        raweset = try(lapply(seq_len(length(adr)), function(i) try(nonAB(i, files, path, ph, columns, adr))))
+        raweset = try(lapply(seq_len(length(adr)), function(i) try(nonAB(i, files, path, ph, rawcol, adr))))
     }
 
- rawesetex = try(creating_experiment(idf = idf, eset = raweset, path = path))
-  if(inherits(raweset, 'try-error'))
-    warning(sprintf("Cannot create the experimentData."))
-  if(!inherits(ph, 'try-error'))
+  rawesetex = try(creating_experiment(idf = idf, eset = raweset, path = path))
+  if(!inherits(rawesetex, 'try-error'))
     raweset = rawesetex
   
   return(raweset)

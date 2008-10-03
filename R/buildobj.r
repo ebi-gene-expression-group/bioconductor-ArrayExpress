@@ -107,7 +107,7 @@ AB = function(i, files, path, ph, adr)
   }#end of AffyBatch
 
 ## Create NCS or ES for non Affymetrix data sets
-nonAB = function(i, files, path, ph, columns, adr)
+nonAB = function(i, files, path, ph, rawcol, adr)
   {
     pht = pData(ph)
     if(!"Array.Data.Matrix.File" %in% colnames(pht))
@@ -150,40 +150,40 @@ nonAB = function(i, files, path, ph, columns, adr)
     fe = grep("Feature Extraction",scanname)
     if(length(feature) != 0)
       scanname = scanname[-feature[!feature %in% fe]]
-    if(is.null(columns) && length(scanname) == 0)
-      stop(sprintf("No scanner name is given. It is not possible to handle such a case. Try to set the argument 'columns' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",allcnames))
+    if(is.null(rawcol) && length(scanname) == 0)
+      stop(sprintf("No scanner name is given. It is not possible to handle such a case. Try to set the argument 'rawcol' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",allcnames))
 
     st = unique(sapply(seq_len(length(scanname)), function(i) strsplit(scanname,":")[[i]][1]))
        
-    if(!is.null(columns))
+    if(!is.null(rawcol))
       {
-        if(length(columns) == 1)
-          columnsn = list(G=columns,R=columns)
-        if(length(columns) > 1)
-          columnsn = columns
+        if(length(rawcol) == 1)
+          rawcoln = list(G=rawcol,R=rawcol)
+        if(length(rawcol) > 1)
+          rawcoln = rawcol
             
-        ev = try(read.maimages(files=unique(files), path=path,columns=columnsn))
+        ev = try(read.maimages(files=unique(files), path=path,columns=rawcoln))
             
         if(inherits(ev, 'try-error'))
           stop(sprintf("Error in read.maimages: %s The files have probably different columns header.", ev[1]))
             
-        if(length(columns) > 1)
+        if(length(rawcol) > 1)
           raweset = build.ncs(ev,pht,files,raweset)
             
-        if(length(columns) == 1)
+        if(length(rawcol) == 1)
           raweset = build.es(ev,pht,files,raweset)
       }
         
-    if(is.null(columns))
+    if(is.null(rawcol))
       {
         if(length(grep(st, scanners)) == 0)
-          stop(sprintf("Scanner name is '%s'. This scanner type is not valid. \nTry to set the argument 'columns' by choosing among the following columns names: \n", st),sprintf("\"%s\" \n",scanname))
+          stop(sprintf("Scanner name is '%s'. This scanner type is not valid. \nTry to set the argument 'rawcol' by choosing among the following columns names: \n", st),sprintf("\"%s\" \n",scanname))
             
         if(length(st) != 1)
-          stop(sprintf("%s scanner names are given ( ",length(st)), sprintf("\"%s\" ",st), sprintf("). It is not possible to handle such a case. Try to set the argument 'columns' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",scanname))
+          stop(sprintf("%s scanner names are given ( ",length(st)), sprintf("\"%s\" ",st), sprintf("). It is not possible to handle such a case. Try to set the argument 'rawcol' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",scanname))
         
         if(length(grep(st, scanners)) > 1)
-          stop(sprintf("Scanner name can be '%s'. \nTry to set the argument 'columns' by choosing among the following columns names: \n", scanners[grep(st, scanners)]),sprintf("\"%s\" \n",scanname))
+          stop(sprintf("Scanner name can be '%s'. \nTry to set the argument 'rawcol' by choosing among the following columns names: \n", scanners[grep(st, scanners)]),sprintf("\"%s\" \n",scanname))
             
         gs = qt[((sl[grep(st,scanners)]+1):(sl[grep(st,scanners)+1]-1)),] ## extract the QTs of the specific scanner type
         foreground = gs[(gs[,4]=="MeasuredSignal" & (is.na(gs[,5]) | gs[,5]==0)),c(1,7)] ## the colnames to use in the read.column
@@ -209,12 +209,12 @@ nonAB = function(i, files, path, ph, columns, adr)
         ## Building NChannelSet when two colours
         if(df[1] == 2)
           {
-            columns = if(db[1] == 2) list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1],Rb=colnamesb[colnamesb[,2]=="Cy5",1], Gb=colnamesb[colnamesb[,2]=="Cy3",1]) else list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1])
+            rawcol = if(db[1] == 2) list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1],Rb=colnamesb[colnamesb[,2]=="Cy5",1], Gb=colnamesb[colnamesb[,2]=="Cy3",1]) else list(R=colnamesf[colnamesf[,2]=="Cy5",1], G=colnamesf[colnamesf[,2]=="Cy3",1])
             
-            if(length(columns) == 0 || (0 %in% sapply(seq_len(length(columns)), function(i) length(columns[[i]]))))
-              stop(sprintf("The known column names for this scanner are not in the heading of the files.\nTry to set the argument 'columns' by choosing among the following columns names: \n"),sprintf("\"%s\" \n",scanname))
+            if(length(rawcol) == 0 || (0 %in% sapply(seq_len(length(rawcol)), function(i) length(rawcol[[i]]))))
+              stop(sprintf("The known column names for this scanner are not in the heading of the files.\nTry to set the argument 'rawcol' by choosing among the following columns names: \n"),sprintf("\"%s\" \n",scanname))
 
-            ev = try(read.maimages(files=unique(files), path=path,columns=columns))
+            ev = try(read.maimages(files=unique(files), path=path,rawcol=rawcol))
             if(inherits(ev, 'try-error'))
               stop(sprintf("Error in read.maimages: %s.", ev[1]))
             raweset = build.ncs(ev,pht,files,raweset)
@@ -223,8 +223,8 @@ nonAB = function(i, files, path, ph, columns, adr)
         ## Building ExpressionSet when one colour
         if(df[1] == 1)
           {
-            columns = list(R=colnamesf[,1], G=colnamesf[,1])
-            ev = try(read.maimages(files=unique(files), path=path,columns=columns))
+            rawcol = list(R=colnamesf[,1], G=colnamesf[,1])
+            ev = try(read.maimages(files=unique(files), path=path,rawcol=rawcol))
             if(inherits(ev, 'try-error'))
               stop(sprintf("Error in read.maimages: %s", ev[1]))
             raweset = build.es(ev,pht,files,raweset)
@@ -232,9 +232,9 @@ nonAB = function(i, files, path, ph, columns, adr)
           }
 
         if(df[1] == 0)
-          stop(sprintf("None of the columns names of the expression files is matching a valid known quantitation type.\nTry to set the argument 'columns' by choosing among the following columns names: \n"), sprintf("\"%s\" \n",scanname))
+          stop(sprintf("None of the columns names of the expression files is matching a valid known quantitation type.\nTry to set the argument 'rawcol' by choosing among the following columns names: \n"), sprintf("\"%s\" \n",scanname))
         if(df[1] > 2)
-          stop(sprintf("There are too many columns that could be read in the files.\n Try to set the argument 'columns' by choosing among the following columns names: \n"),sprintf("\"%s\" \n",scanname))
+          stop(sprintf("There are too many columns that could be read in the files.\n Try to set the argument 'rawcol' by choosing among the following columns names: \n"),sprintf("\"%s\" \n",scanname))
      }
     return(raweset)
   }#end of non Affymetrix objects
@@ -276,61 +276,10 @@ creating_experiment = function(idf, eset, path)
         experimentalFactor = c(idf.data$"Experimental Factor Type"), 
         ##Experimental Design
         type = c(idf.data$"Experimental Design"),
-        measurementType = experimentData(eset)@other$measurementType #from processed data.zip depending on user answer about QT type
+        measurementType = experimentData(eset)@other$measurementType
         )
       )
     experimentData(eset) = experimentData
     return(eset)	  
   }
 
-## By Juok Cho 
-creating_assayData_userchoice = function(eset, path)
-  {
-    assayData=Processed_to_Assay(eset, path)
-	  
-    selected_QT = which_QT(assayData)
-	  
-    cols = which(assayData$FileHead[2,]==selected_QT)
-	  
-    experimentData(eset)@other$measurementType = as.character(assayData$FileHead[2,cols[1]])
-	  
-    exprs = as.matrix(assayData$File[-1,cols])
-    rownames(exprs) = assayData$File[-1,1]
-    colnames(exprs) = phenoData(eset)@data$Hybridization.Name
-	  
-####################### CHANGE ########################
-##Depending on which measure you select in whichQT(), values loaded to exprs will be 
-## characters or numeric...; you have to be careful when analyzing that matrix if it is
-## not numeric. Maybe it's a better idea to take always the signal and don't let it to the user's choice
-    exprs(eset) = exprs
-##exprs(eset) = matrix(as.double(exprs),nrow=dim(exprs)[1],ncol=dim(exprs)[2], dimnames=list(rownames(exprs), colnames(exprs)))
-####################### CHANGE ########################
-    return(eset)
-  }
-
-## By Juok Cho 
-Processed_to_Assay = function(eset, path)
-  {
-    assayData=list();
-	  
-    processed_data = unique(phenoData(eset)@data$Derived.Array.Data.Matrix.File)
-    assayData$File = read.delim(paste(path,"/",processed_data, sep=""),header=FALSE,skip=1)
-    assayData$FileHead = read.delim(paste(path,"/",processed_data,sep=""),header=FALSE,nrows=2)
-	  
-    return(assayData);
-  }
-
-## By Juok Cho
-which_QT=function(assayData)
-  {	
-    ## ASK QT
-    uni=unique(t(assayData$FileHead[2,]))[-1]
-    QT = uni[!uni[]%in%""];
-    cat(paste("{",1:length(QT),"}:", QT, sep=""), sep="\n")
-    #print(QT)
-    #print(uni)
-    selected_QT_number = as.integer(readline("Which kind of measure would you like for exprs?  " ))
-    selected_QT=QT[selected_QT_number] 
-	  
-    return(selected_QT)
-  }

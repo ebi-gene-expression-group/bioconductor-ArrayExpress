@@ -1,1 +1,1 @@
-export("ArrayExpress","extract.zip", "getAE", "queryAE", "magetab2bioc", "AEproc2bioc")
+export("ArrayExpress", "getAE", "queryAE", "magetab2bioc")

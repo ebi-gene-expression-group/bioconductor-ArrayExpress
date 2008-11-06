@@ -7,13 +7,14 @@
   ExpressionSet or a NChannelSet.
 }
 \usage{
-magetab2bioc(rawfiles, sdrf, idf, path = ".", rawcol = NULL, save = TRUE)
+magetab2bioc(rawfiles, sdrf, idf, adf, path = ".", rawcol = NULL, save = TRUE)
 }
 \arguments{
   \item{rawfiles}{ all the expression files to use to create the object.
   The content of the raw.zip MAGE-TAB file.}
   \item{sdrf}{ the sdrf file from MAGE-TAB. }
   \item{idf}{ the idf file from MAGE-TAB. }
+  \item{adf}{ the adf file from MAGE-TAB. }
   \item{path}{ is the name of the directory in which the files downloaded on the ArrayExpress repository will be extracted.}
   \item{rawcol}{ by default, the columns are automatically selected
     according to the scanner type. If the scanner is unknown or if the
@@ -32,8 +33,8 @@ magetab2bioc(rawfiles, sdrf, idf, path = ".", rawcol = NULL, save = TRUE)
   \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}} or 
   \code{\link[Biobase:class.NChannelSet]{NChannelSet}} with the raw expression
   values in the assayData of the object, the information
-  contained in the .sdrf file in the phenoData, and the idf file content
-  in the experimentData.
+  contained in the .sdrf file in the phenoData, the adf file content in
+  the featureData and the idf file content in the experimentData.
 
   If several array designs are used in the data set, the output is a
   list with an object for each array design.  
@@ -45,6 +46,7 @@ magetab2bioc(rawfiles, sdrf, idf, path = ".", rawcol = NULL, save = TRUE)
 }
 \examples{
 MEXP1422 = getAE("E-MEXP-1422")
-MEXP1422set = magetab2bioc(rawfiles = MEXP1422$rawfiles, sdrf = MEXP1422$sdrf, idf = MEXP1422$idf)
+MEXP1422set = magetab2bioc(rawfiles = MEXP1422$rawfiles, sdrf =
+  MEXP1422$sdrf, idf = MEXP1422$idf, adf = MEXP1422$adf)
 }
 \keyword{datasets}

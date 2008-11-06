@@ -84,6 +84,7 @@ rawset = ArrayExpress("E-MEXP-1422")
 In this example, \emph{'E-MEXP-1422'} being an Affymetrix experiment, 'rawset' is an \Rclass{AffyBatch}.
 The expression values of 'rawset' are the content from the CEL files.
 The \Rclass{phenoData} of 'rawset' contains the whole sample annotation file content from the MAGE-TAB sdrf file.
+The \Rclass{featureData} of 'rawset' contains the whole feature annotation file content from the MAGE-TAB adf file.
 The \Rclass{experimentData} of 'rawset' contains the experiment annotation file content from the MAGE-TAB idf file.
 
 \paragraph{Example when the column names are needed}
@@ -127,6 +128,7 @@ The arguments for the \Rfunction{magetab2bioc} are:
   The content of the raw.zip MAGE-TAB file.
   \item \emph{sdrf} the sdrf file from MAGE-TAB. 
   \item \emph{idf} the idf file from MAGE-TAB. 
+  \item \emph{adf} the adf file from MAGE-TAB. 
   \item \emph{path} see the ArrayExpress function arguments. 
   \item \emph{rawcol} see the ArrayExpress function arguments. 
   \item \emph{save} see the ArrayExpress function arguments. 
@@ -137,6 +139,7 @@ As an example, we can use the files that we have downloaded in the previous exam
 <<magetab2bioc-full>>=
 rawset= magetab2bioc(rawfiles = full$rawfiles,
   sdrf = full$sdrf,
+  adf = full$adf,
   idf = full$idf)
 @
 %

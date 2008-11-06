@@ -7,7 +7,7 @@ getAE = function (input, path = ".", save = TRUE, type = "full") {
     dir = gsub("[a-z]$","",dir)
   url = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment"
   exp = paste(url,dir,input,input,sep="/")
-  
+
   if(type == "full" || type == "raw")
     {
       ##RAW DATA######################
@@ -53,15 +53,43 @@ getAE = function (input, path = ".", save = TRUE, type = "full") {
   
   ## Download sdrf checking
   if(inherits(sdrf, 'try-error') || file.info(sdrffile)$size == 0) {
-    warning(paste(sdrf, " does not exist or is empty. \n"),sep="")
-    sdrffile = NULL } else sdrffile = basename(sdrffile)
+    warning(paste(sdrf, " does not exist or is empty. The object will not have featureData or phenoData. \n"),sep="")
+    sdrffile = NULL
+    adffile = NULL } else sdrffile = basename(sdrffile)
 
+  ##ADF DATA######################
+  ## Download adf file
+  if(!inherits(sdrf, 'try-error') && file.info(sdrffile)$size != 0)
+    {
+      ph = try(read.AnnotatedDataFrame(sdrffile, path = path, row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
+      adr = try(unique(pData(ph)$Array.Design.REF))
+      adr = adr[adr != ""]
+      if(!inherits(adr, 'try-error'))
+        {
+          dira = gsub("^A-|-[0-9]{1,10}","",adr)
+          url3 = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/array"
+          features = paste(adr,".adf.txt",sep="")
+          featureannot = paste(url3,dira,adr,features,sep="/")
+          
+          adffile = paste(path, basename(featureannot), sep="/")
+          adf = try(download.file(featureannot, adffile, mode="wb"))
+        } else {
+          adffile = NULL
+          warning("Cannot retrieve the array design information from the sdrf file, the object will not have featureData attached. \n",sep="")
+        }
+      ## Download adf checking
+      if(inherits(adf, 'try-error') || file.info(adffile)$size == 0) {
+        warning(paste(adf, " does not exist or is empty. \n"),sep="")
+        adffile = NULL } else adffile = basename(adffile)
+    }
+  
+  
   ##IDF DATA######################
   ## Download idf file
   annot = paste(exp,".idf.txt",sep="")
   idffile = paste(path,basename(annot),sep="/")
   idf = try(download.file(annot, idffile, mode="wb"))
-  
+
   ## Download idf checking
   if(inherits(idf, 'try-error') || file.info(idffile)$size == 0) {
     warning(paste(idf, " does not exist or is empty. \n"),sep="")
@@ -78,7 +106,7 @@ getAE = function (input, path = ".", save = TRUE, type = "full") {
       rawdata = NULL
       rawfiles = NULL
     }
-  res = list(path = path, rawdata = rawdata, rawfiles = rawfiles, procdata = procdata, procfiles = procfiles, sdrf = sdrffile, idf = idffile)
+  res = list(path = path, rawdata = rawdata, rawfiles = rawfiles, procdata = procdata, procfiles = procfiles, sdrf = sdrffile, idf = idffile, adf = adffile)
   return(res)
   
 }#end of getAE

@@ -1,4 +1,4 @@
-magetab2bioc = function(rawfiles, sdrf, idf, path = ".", rawcol = NULL, save = TRUE) {
+magetab2bioc = function(rawfiles, sdrf, idf, adf, path = ".", rawcol = NULL, save = TRUE) {  
   if(!is.null(rawcol))
     {
       if(length(rawcol) > 1 && !is(rawcol,"list"))
@@ -25,7 +25,7 @@ magetab2bioc = function(rawfiles, sdrf, idf, path = ".", rawcol = NULL, save = T
     {
       warning(sprintf("No sdrf file available. The object may not be built."))
       adr = "Empty"
-      raweset = try(AB(i=1, files, path, ph, adr))
+      raweset = try(AB(i=1, files, path, ph, adr, adf, idf))
 
     }
   if(!inherits(ph, 'try-error'))
@@ -50,24 +50,19 @@ magetab2bioc = function(rawfiles, sdrf, idf, path = ".", rawcol = NULL, save = T
   if(length(grep(".cel",files)) == length(files))
     {
       if(length(adr) == 1)
-        raweset = try(AB(i=1, files, path, ph, adr))
+        raweset = try(AB(i=1, files, path, ph, adr, adf, idf))
 
       if(length(adr) > 1)
-        raweset = try(lapply(seq_len(length(adr)), function(i) try(AB(i, files, path, ph, adr))))
+        raweset = try(lapply(seq_len(length(adr)), function(i) try(AB(i, files, path, ph, adr, adf, idf))))
     }
    
   ## Non Affymetrix data
   if(length(grep(".cel",files)) == 0)
     {
       if(length(adr) == 1)
-        raweset = try(nonAB(i=1, files, path, ph, rawcol, adr))
+        raweset = try(nonAB(i=1, files, path, ph, rawcol, adr, adf, idf))
       if(length(adr) > 1)
-        raweset = try(lapply(seq_len(length(adr)), function(i) try(nonAB(i, files, path, ph, rawcol, adr))))
+        raweset = try(lapply(seq_len(length(adr)), function(i) try(nonAB(i, files, path, ph, rawcol, adr, adf, idf))))
     }
-
-  rawesetex = try(creating_experiment(idf = idf, eset = raweset, path = path))
-  if(!inherits(rawesetex, 'try-error'))
-    raweset = rawesetex
-  
   return(raweset)
 }#end of magetab2bioc

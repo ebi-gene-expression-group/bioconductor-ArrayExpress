@@ -8,9 +8,13 @@ ArrayExpress = function(input, path = ".", save = TRUE, rawcol = NULL)
     raweset = magetab2bioc(rawfiles = extract$rawfiles,
       sdrf = extract$sdrf,
       idf = extract$idf,
+      adf = extract$adf,
       path = path,
       rawcol = rawcol,
       save = save)
     
-      return(raweset)    
+    if(!inherits(raweset, 'try-error'))
+      message(paste("\n The object containing experiment ", input," has been built.\n"))
+    
+    return(raweset)
   }#end of ArrayExpress

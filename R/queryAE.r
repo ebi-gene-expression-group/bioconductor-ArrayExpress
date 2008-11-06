@@ -8,7 +8,7 @@ queryAE = function(keywords = NULL, species = NULL)
       }
     if(is.null(keywords) && !is.null(species))
       qr = paste("http://www.ebi.ac.uk/microarray-as/ae/xml/experiments?species=",species,sep="")
-
+    
     queryfilename = paste("query",keywords,species,".xml",sep="")
     query = try(download.file(qr, queryfilename, mode="wb"))
     
@@ -26,7 +26,7 @@ queryAE = function(keywords = NULL, species = NULL)
     Raw[Raw == "0"] = "No"
     Processed[Processed != "0"] = "Yes"
     Processed[Processed == "0"] = "No"
-
+    
     xmlparsed = data.frame(ID = ID, Raw = Raw, Processed = Processed)
     return(xmlparsed)
   }

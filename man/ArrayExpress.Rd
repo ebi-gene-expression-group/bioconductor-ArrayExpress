@@ -36,8 +36,8 @@ ArrayExpress(input, path = ".", save = TRUE, rawcol = NULL)
   \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}} or 
   \code{\link[Biobase:class.NChannelSet]{NChannelSet}} with the raw expression
   values in the assayData of the object, the information
-  contained in the .sdrf file in the phenoData, and the idf file content
-  in the experimentData.
+  contained in the .sdrf file in the phenoData, the adf file in the
+  featureData and the idf file content in the experimentData.
 
   If several array designs are used in the data set, the output is a
   list with an object for each array design.

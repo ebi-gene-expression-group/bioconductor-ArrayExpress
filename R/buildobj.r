@@ -69,7 +69,7 @@ assign.pheno.ncs = function(ph,files,raweset)
 
 
 ## Create AffyBatch for Affymetrix data sets
-AB = function(i, files, path, ph, adr)
+AB = function(i, files, path, ph, adr, adf, idf)
   {
     if(adr == "Empty" || is.na(adr))
       {
@@ -103,11 +103,18 @@ AB = function(i, files, path, ph, adr)
               }              
           }
       }
+    rawesetex = try(creating_experiment(idf = idf, eset = raweset, path = path))
+    if(!inherits(rawesetex, 'try-error'))
+      raweset = rawesetex else warning("Cannot attach experimentData")
+  
+    rawesetex = try(addADF(adf = adf, eset = raweset, path = path))
+    if(!inherits(rawesetex, 'try-error'))
+      raweset = rawesetex else warning("Cannot attach featureData")
     return(raweset)
   }#end of AffyBatch
 
 ## Create NCS or ES for non Affymetrix data sets
-nonAB = function(i, files, path, ph, rawcol, adr)
+nonAB = function(i, files, path, ph, rawcol, adr, adf, idf)
   {
     pht = pData(ph)
     if(!"Array.Data.Matrix.File" %in% colnames(pht))
@@ -214,7 +221,7 @@ nonAB = function(i, files, path, ph, rawcol, adr)
             if(length(rawcol) == 0 || (0 %in% sapply(seq_len(length(rawcol)), function(i) length(rawcol[[i]]))))
               stop(sprintf("The known column names for this scanner are not in the heading of the files.\nTry to set the argument 'rawcol' by choosing among the following columns names: \n"),sprintf("\"%s\" \n",scanname))
 
-            ev = try(read.maimages(files=unique(files), path=path,rawcol=rawcol))
+            ev = try(read.maimages(files=unique(files), path=path,columns=rawcol))
             if(inherits(ev, 'try-error'))
               stop(sprintf("Error in read.maimages: %s.", ev[1]))
             raweset = build.ncs(ev,pht,files,raweset)
@@ -224,7 +231,7 @@ nonAB = function(i, files, path, ph, rawcol, adr)
         if(df[1] == 1)
           {
             rawcol = list(R=colnamesf[,1], G=colnamesf[,1])
-            ev = try(read.maimages(files=unique(files), path=path,rawcol=rawcol))
+            ev = try(read.maimages(files=unique(files), path=path,columns=rawcol))
             if(inherits(ev, 'try-error'))
               stop(sprintf("Error in read.maimages: %s", ev[1]))
             raweset = build.es(ev,pht,files,raweset)
@@ -236,6 +243,16 @@ nonAB = function(i, files, path, ph, rawcol, adr)
         if(df[1] > 2)
           stop(sprintf("There are too many columns that could be read in the files.\n Try to set the argument 'rawcol' by choosing among the following columns names: \n"),sprintf("\"%s\" \n",scanname))
      }
+
+
+    rawesetex = try(creating_experiment(idf = idf, eset = raweset, path = path))
+    if(!inherits(rawesetex, 'try-error'))
+      raweset = rawesetex else warning("Cannot attach experimentData")
+  
+    rawesetex = try(addADF(adf = adf, eset = raweset, path = path))
+    if(!inherits(rawesetex, 'try-error'))
+      raweset = rawesetex else warning("Cannot attach featureData")
+
     return(raweset)
   }#end of non Affymetrix objects
 
@@ -269,6 +286,7 @@ creating_experiment = function(idf, eset, path)
       title = idf.data$"Investigation Title" , #description #Investigation Title
       ##abstract= "",	#not provided in the idf.data
       ##url	= "",
+      pubMedIds = as.character(idf.data$"PubMed ID"),
       other = list(
         accession = gsub(".sdrf.txt","",idf.data$"SDRF File"), #Experiment Name
         identifier = gsub(".sdrf.txt","",idf.data$"SDRF File"), #Experiment Name
@@ -276,10 +294,16 @@ creating_experiment = function(idf, eset, path)
         experimentalFactor = c(idf.data$"Experimental Factor Type"), 
         ##Experimental Design
         type = c(idf.data$"Experimental Design"),
-        measurementType = experimentData(eset)@other$measurementType
-        )
+        measurementType = experimentData(eset)@other$measurementType,
+        date = idf.data$"Public Release Date")
       )
     experimentData(eset) = experimentData
     return(eset)	  
+  }
+
+addADF = function(adf, eset, path)
+  {
+    featureData(eset) = try(read.AnnotatedDataFrame(adf, path = path, row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
+    return(eset)
   }
 

@@ -72,7 +72,7 @@ getAE = function (input, path = ".", save = TRUE, type = "full") {
           featureannot = paste(url3,dira,adr,features,sep="/")
           
           adffile = paste(path, basename(featureannot), sep="/")
-          adf = try(download.file(featureannot, adffile, mode="wb"))
+          adf = try(lapply(1:length(featureannot), function(i) download.file(featureannot[[i]], adffile[i], mode="wb")))
         } else {
           adffile = NULL
           warning("Cannot retrieve the array design information from the sdrf file, the object will not have featureData attached. \n",sep="")

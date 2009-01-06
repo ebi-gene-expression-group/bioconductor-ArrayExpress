@@ -1,1 +1,6 @@
+importFrom("XML", "xmlTreeParse",
+           "xmlRoot",
+           "xmlElementsByTagName",
+           "getNodeSet",
+           "xmlGetAttr")
 export("ArrayExpress", "getAE", "queryAE", "magetab2bioc")

@@ -92,12 +92,12 @@ AB = function(i, files, path, ph, adr, adf, idf)
       {
         if(!inherits(ph, 'try-error'))
           {
-            pData(ph) = pData(ph)[1:length(files),]
-            if(length(ph$Array.Data)==length(unique(ph$Array.Data)))
+            pData(pht) = pData(pht)[1:length(files),]
+            if(length(pht$Array.Data)==length(unique(pht$Array.Data)))
               {
-                rownames(pData(ph)) = ph$Array.Data
-                pData(ph) = pData(ph)[sampleNames(raweset),]
-                phenoData(raweset) = ph
+                rownames(pData(pht)) = pht$Array.Data
+                pData(pht) = pData(pht)[sampleNames(raweset),]
+                phenoData(raweset) = pht
               } else {
                 warning(sprintf("Cannot attach phenoData to the object as the Array Data File column of the sdrf file contains duplicated elements.")) 
               }              
@@ -107,7 +107,7 @@ AB = function(i, files, path, ph, adr, adf, idf)
     if(!inherits(rawesetex, 'try-error'))
       raweset = rawesetex else warning("Cannot attach experimentData")
   
-    rawesetex = try(addADF(adf = adf, eset = raweset, path = path))
+    rawesetex = try(addADF(adf = adf[i], eset = raweset, path = path))
     if(!inherits(rawesetex, 'try-error'))
       raweset = rawesetex else warning("Cannot attach featureData")
     return(raweset)
@@ -249,7 +249,7 @@ nonAB = function(i, files, path, ph, rawcol, adr, adf, idf)
     if(!inherits(rawesetex, 'try-error'))
       raweset = rawesetex else warning("Cannot attach experimentData")
   
-    rawesetex = try(addADF(adf = adf, eset = raweset, path = path))
+    rawesetex = try(addADF(adf = adf[i], eset = raweset, path = path))
     if(!inherits(rawesetex, 'try-error'))
       raweset = rawesetex else warning("Cannot attach featureData")
 
@@ -280,13 +280,12 @@ creating_experiment = function(idf, eset, path)
     ## making experimentData object #		
     SubmitterIndex=which(idf.data$"Person Roles"=="submitter")
     experimentData = new("MIAME", 
-      name=paste(idf.data$"Person Last Name"[SubmitterIndex],", ",idf.data$"Person First Name"[SubmitterIndex], sep=""), #performer
-      lab = idf.data$"Person Affiliation"[SubmitterIndex] , #Person Affiliation 
-      contact = idf.data$"Person Email"[SubmitterIndex], # Person Email(Person Phone, Person Address)
-      title = idf.data$"Investigation Title" , #description #Investigation Title
+      name = as.character(paste(idf.data$"Person Last Name"[SubmitterIndex],", ",idf.data$"Person First Name"[SubmitterIndex], sep="")), #performer
+      lab = as.character(idf.data$"Person Affiliation"[SubmitterIndex]) , #Person Affiliation 
+      contact = as.character(idf.data$"Person Email"[SubmitterIndex]), # Person Email(Person Phone, Person Address)
+      title = as.character(idf.data$"Investigation Title") , #description #Investigation Title
       ##abstract= "",	#not provided in the idf.data
       ##url	= "",
-      pubMedIds = as.character(idf.data$"PubMed ID"),
       other = list(
         accession = gsub(".sdrf.txt","",idf.data$"SDRF File"), #Experiment Name
         identifier = gsub(".sdrf.txt","",idf.data$"SDRF File"), #Experiment Name
@@ -294,8 +293,8 @@ creating_experiment = function(idf, eset, path)
         experimentalFactor = c(idf.data$"Experimental Factor Type"), 
         ##Experimental Design
         type = c(idf.data$"Experimental Design"),
-        measurementType = experimentData(eset)@other$measurementType,
-        date = idf.data$"Public Release Date")
+        measurementType = experimentData(eset)@other$measurementType #from processed data.zip depending on user answer about QT type
+        )
       )
     experimentData(eset) = experimentData
     return(eset)	  

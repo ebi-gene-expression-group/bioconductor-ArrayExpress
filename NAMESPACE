@@ -3,4 +3,5 @@ importFrom("XML", "xmlTreeParse",
            "xmlElementsByTagName",
            "getNodeSet",
            "xmlGetAttr")
-export("ArrayExpress", "getAE", "queryAE", "magetab2bioc")
+export("ArrayExpress", "getAE", "queryAE", "magetab2bioc", "AEproc2bioc", "getcolproc", "procset")
+

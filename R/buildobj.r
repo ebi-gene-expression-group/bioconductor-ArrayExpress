@@ -256,6 +256,36 @@ nonAB = function(i, files, path, ph, rawcol, adr, adf, idf)
     return(raweset)
   }#end of non Affymetrix objects
 
+procset = function(files, procol, path, sdrf, adf, idf)
+  {
+    proctot = read.table(paste(path,"/",files, sep=""),header=T,sep="\t")
+    procsel = proctot[-1, procol == proctot[1,]]
+    colnames(procsel) = colnames(proctot[, procol == proctot[1,]])
+    rownames(procsel) = proctot[-1,1]
+
+    proceset = new("ExpressionSet",
+      exprs = as.matrix(procsel))
+
+    ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
+
+    phenoData(proceset) = ph
+
+    procesetex = try(creating_experiment(idf = idf, eset = proceset, path = path))
+    if(!inherits(procesetex, 'try-error'))
+      proceset = procesetex else warning("Cannot attach experimentData")
+    
+    procesetex = try(addADF(adf = adf, eset = proceset, path = path))
+    if(!inherits(procesetex, 'try-error'))
+      proceset = procesetex else warning("Cannot attach featureData")   
+  }
+
+getcolproc = function(files, path)
+  {
+    he = read.delim(file = paste(path,files,sep="/"), nrows = 1, header = T, sep = "\t")
+    coln = unique(t(he))
+    return(coln)
+  }
+
 ## Assign experiment Data
 ## By Juok Cho
 creating_experiment = function(idf, eset, path)

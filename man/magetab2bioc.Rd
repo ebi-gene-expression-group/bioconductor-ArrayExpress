@@ -1,7 +1,7 @@
 \name{magetab2bioc}
 \alias{magetab2bioc}
 \docType{data}
-\title{ Convert TAB-MAGE data into a Bioconductor object }
+\title{ Convert MAGE-TAB data into a Bioconductor object }
 \description{
   \code{magetab2bioc} converts local MAGE-TAB files into a AffyBatch, an
   ExpressionSet or a NChannelSet.

@@ -279,7 +279,7 @@ procset = function(files, procol, path, sdrf, adf, idf)
       proceset = procesetex else warning("Cannot attach featureData")   
   }
 
-getcolproc = function(files, path)
+getcolproc = function(files, path = ".")
   {
     he = read.delim(file = paste(path,files,sep="/"), nrows = 1, header = T, sep = "\t")
     coln = unique(t(he))

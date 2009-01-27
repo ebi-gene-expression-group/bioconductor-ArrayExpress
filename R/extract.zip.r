@@ -15,10 +15,14 @@ extract.zip = function (file, unzip = getOption("unzip")) {
           if(inherits(rc,"try-error"))
             stop("Cannot extract the files the downloaded archive. Please install unzip on your machine")   
           rc = paste("E-",na.omit(sapply(1:length(rc), function(i) strsplit(rc," E-")[[i]][2])),sep="")
+          if(length(grep("zip",rc)) != 0)
+            rc = rc[-grep("zip",rc)]
           res = system(cmd, invisible = TRUE)
 	} else {
           rc = system(list, intern=T)##works
           rc = paste("E-",na.omit(sapply(1:length(rc), function(i) strsplit(rc," E-")[[i]][2])),sep="")
+          if(length(grep("zip",rc)) != 0)
+            rc = rc[-grep("zip",rc)]
           res = system(paste(cmd, "> /dev/null"))
         }
     }
@@ -26,6 +30,8 @@ extract.zip = function (file, unzip = getOption("unzip")) {
       rc = .Internal(int.unzip(file.path(path, topic),NULL, path)) ##works
       rc = attr(rc,"extracted")
       rc = paste("E-",na.omit(sapply(1:length(rc), function(i) strsplit(rc,"E-")[[i]][2])),sep="")
+      if(length(grep("zip",rc)) != 0)
+        rc = rc[-grep("zip",rc)]
     }
   } else stop(sprintf("%s does not exist",file.path(path, topic)))
   

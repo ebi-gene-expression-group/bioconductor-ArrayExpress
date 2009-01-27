@@ -59,7 +59,7 @@ getAE = function (input, path = ".", save = TRUE, type = "full") {
 
   ##ADF DATA######################
   ## Download adf file
-  if(!inherits(sdrf, 'try-error') && file.info(sdrffile)$size != 0)
+  if(!inherits(sdrf, 'try-error') && file.info(file.path(path,sdrffile))$size != 0)
     {
       ph = try(read.AnnotatedDataFrame(sdrffile, path = path, row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
       adr = try(unique(pData(ph)$Array.Design.REF))

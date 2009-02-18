@@ -1,14 +1,14 @@
-extract.zip = function (file, unzip = getOption("unzip")) {
+extract.zip = function (file, unzip = getOption("unzip"), extract_path = dirname(file)) {
   if (!is.character(unzip) || length(unzip) != 1) 
     stop("'unzip' must be a single character string")
   if (!nzchar(unzip)) 
     unzip = "internal"
-  path = dirname(file)
   topic = basename(file)
+  path = dirname(file)
   if (file.exists(file.path(path, topic))) {
     if (unzip != "internal") {
       list = paste(unzip, "-l", file)
-      cmd = paste(unzip, "-oq", file, " -d ", path)
+      cmd = paste(unzip, "-oq", file, " -d ", extract_path)
       if (.Platform$OS.type == "windows")
 	{
           rc = try(system(list, intern=T))

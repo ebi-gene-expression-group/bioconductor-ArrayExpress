@@ -1,4 +1,4 @@
-getAE = function (input, path = ".", save = TRUE, type = "full") {
+getAE = function (input, path = ".", save = TRUE, type = "full", extract = TRUE) {
   if(!save) on.exit({try(file.remove(file.path(path, rawdata)));try(file.remove(file.path(path, procdata)))})
   
   ## Building the link with the input name
@@ -22,7 +22,10 @@ getAE = function (input, path = ".", save = TRUE, type = "full") {
         rawdata = NULL
         rawfiles = NULL
       } else  {
-        rawfiles = extract.zip(file = rawdata)
+	if(extract==TRUE)
+	        rawfiles = extract.zip(file = rawdata)
+	else
+		rawfiles = rawdata
         rawdata = basename(rawdata) }
     }
   

@@ -7,12 +7,13 @@
   specific directory.
 }
 \usage{
-extract.zip(file, unzip = getOption("unzip"))
+extract.zip(file, unzip = getOption("unzip"), extract_path = dirname(file))
 }
 \arguments{
   \item{file}{ A file name. }
   \item{unzip}{ character string: the method to be used, an empty string
           indicates '"internal"'. }
+  \item{extract_path}{ a path to define where the files are to be extracted. }
 }
 \value{
   \code{ Success is indicated by returning the directory in which the

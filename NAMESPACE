@@ -3,5 +3,5 @@ importFrom("XML", "xmlTreeParse",
            "xmlElementsByTagName",
            "getNodeSet",
            "xmlGetAttr")
-export("ArrayExpress", "getAE", "queryAE", "magetab2bioc", "getcolproc", "procset")
+export("ArrayExpress", "getAE", "queryAE", "magetab2bioc", "getcolproc", "procset", "extract.zip")
 

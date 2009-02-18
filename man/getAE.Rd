@@ -7,7 +7,7 @@
   ArrayExpress data set.
 }
 \usage{
-getAE(input, path = ".", save = TRUE, type = "full")
+getAE(input, path = ".", save = TRUE, type = "full", extract = TRUE)
 }
 \arguments{
   \item{input}{ is an ArrayExpress identifier. }
@@ -16,6 +16,7 @@ getAE(input, path = ".", save = TRUE, type = "full")
   \item{type}{ can be 'raw' to download and extract only the raw data,
     'processed' to download and extract only the processed data or
     'full' to have both raw and processed data.}
+  \item{extract}{ if FALSE, the files are not extracted from the zip archive.}
 }
 \value{
   \code{ A list with the names of the files that

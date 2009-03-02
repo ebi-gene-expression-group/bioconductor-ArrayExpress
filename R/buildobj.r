@@ -256,9 +256,15 @@ nonAB = function(i, files, path, ph, rawcol, adr, adf, idf)
     return(raweset)
   }#end of non Affymetrix objects
 
-procset = function(files, procol, path, sdrf, adf, idf)
+procset = function(files, procol)
   {
-    proctot = read.table(paste(path,"/",files, sep=""),header=T,sep="\t")
+    path = files$path
+    procfile = files$procfile
+    sdrf = files$sdrf
+    idf = files$idf
+    adf = files$adf
+
+    proctot = read.table(paste(path,"/",procfile, sep=""),header=T,sep="\t")
     procsel = proctot[-1, procol == proctot[1,]]
     colnames(procsel) = colnames(proctot[, procol == proctot[1,]])
     rownames(procsel) = proctot[-1,1]
@@ -279,9 +285,9 @@ procset = function(files, procol, path, sdrf, adf, idf)
       proceset = procesetex else warning("Cannot attach featureData")   
   }
 
-getcolproc = function(files, path = ".")
+getcolproc = function(procfile, path = ".")
   {
-    he = read.delim(file = paste(path,files,sep="/"), nrows = 1, header = T, sep = "\t")
+    he = read.delim(file = paste(path,procfile,sep="/"), nrows = 1, header = T, sep = "\t")
     coln = unique(t(he))
     return(coln)
   }

@@ -7,17 +7,14 @@
  }
 
 \usage{
-procset(files, procol, path, sdrf, adf, idf)
+procset(files, procol)
 }
 
 \arguments{
-  \item{files}{ is the name of the processed MAGE-TAB file to be read. }
+  \item{files}{ is the list with the names of the processed, the sdrf,
+  the adf and the idf files and the path of the data. }
   \item{procol}{ the name of the column to be extracted from the
   file. Obtained using \code{\link{getcolproc}}.}
-  \item{path}{ is the name of the directory where to find this file.}
-  \item{sdrf}{ the sdrf file from MAGE-TAB. }
-  \item{adf}{ the adf file from MAGE-TAB. }
-  \item{idf}{ the idf file from MAGE-TAB. }
 }
 
 \seealso{\code{\link{ArrayExpress}}, \code{\link{getAE}},
@@ -27,8 +24,8 @@ procset(files, procol, path, sdrf, adf, idf)
   Maintainer: <audrey@ebi.ac.uk>  
 }
 \examples{
-files = getAE("E-MEXP-1422", type = "processed")
-cnames = getcolproc(files$procfiles, path = ".")
-MEXP1422 = procset(files$procfiles, cnames[2], ".", files$sdrf, files$adf, files$idf)
+mexp1422 = getAE("E-MEXP-1422", type = "processed")
+cnames = getcolproc(mexp1422$procfile, path = ".")
+MEXP1422 = procset(mexp1422, cnames[2])
 }
 \keyword{datasets}

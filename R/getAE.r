@@ -1,12 +1,11 @@
 getAE = function (input, path = ".", save = TRUE, type = "full", extract = TRUE) {
+  oldopt = options()$HTTPUserAgent
+  on.exit(options(HTTPUserAgent = oldopt))
   if(!save) on.exit({try(file.remove(file.path(path, rawdata)));try(file.remove(file.path(path, procdata)))})
   
   ## Building the link with the input name
-  dir = gsub("^E-|-[0-9]{1,10}","",input)
-  if(nchar(dir) == 5)
-    dir = gsub("[a-z]$","",dir)
-  url = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/experiment"
-  exp = paste(url,dir,input,input,sep="/")
+  url = "http://www.ebi.ac.uk/microarray-as/ae/files"
+  exp = paste(url,input,input,sep="/")
 
   if(type == "full" || type == "raw")
     {
@@ -14,6 +13,7 @@ getAE = function (input, path = ".", save = TRUE, type = "full", extract = TRUE)
       ## Saving temporarily the raw data
       raw = paste(exp,".raw.zip",sep="")
       rawdata = file.path(path,paste(input,".raw.zip",sep=""))
+      options(HTTPUserAgent = paste(oldopt, "ArrayExpress", sessionInfo("ArrayExpress")$otherPkgs[[1]]$Version))
       dnld = try(download.file(raw, rawdata, mode="wb"))
       
       ## Download raw.zip checking
@@ -41,9 +41,9 @@ getAE = function (input, path = ".", save = TRUE, type = "full", extract = TRUE)
       if(inherits(dnldp, 'try-error') || file.info(procdata)$size == 0) {
         warning(paste(proc, " does not exist or is empty. \n"),sep="")
         procdata = NULL
-        procfiles = NULL
+        procfile = NULL
       } else  {
-        procfiles = extract.zip(file = procdata)
+        procfile = extract.zip(file = procdata)
         procdata = basename(procdata)
       }
     }
@@ -69,10 +69,9 @@ getAE = function (input, path = ".", save = TRUE, type = "full", extract = TRUE)
       adr = adr[adr != ""]
       if(!inherits(adr, 'try-error'))
         {
-          dira = gsub("^A-|-[0-9]{1,10}","",adr)
-          url3 = "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/array"
+          url3 = "http://www.ebi.ac.uk/microarray-as/ae/files"
           features = paste(adr,".adf.txt",sep="")
-          featureannot = paste(url3,dira,adr,features,sep="/")
+          featureannot = paste(url3,adr,features,sep="/")
           
           adffile = paste(path, basename(featureannot), sep="/")
           adf = try(lapply(1:length(featureannot), function(i) download.file(featureannot[[i]], adffile[i], mode="wb")))
@@ -102,14 +101,15 @@ getAE = function (input, path = ".", save = TRUE, type = "full", extract = TRUE)
     if(type == "raw")
     {
       procdata = NULL
-      procfiles = NULL
+      procfile = NULL
     }
   if(type == "processed")
     {
       rawdata = NULL
       rawfiles = NULL
     }
-  res = list(path = path, rawdata = rawdata, rawfiles = rawfiles, procdata = procdata, procfiles = procfiles, sdrf = sdrffile, idf = idffile, adf = adffile)
+
+  res = list(path = path, rawdata = rawdata, rawfiles = rawfiles, procdata = procdata, procfile = procfile, sdrf = sdrffile, idf = idffile, adf = adffile)
   return(res)
   
 }#end of getAE

@@ -8,11 +8,11 @@
 }
 
 \usage{
-getcolproc(files, path = ".")
+getcolproc(procfile, path = ".")
 }
 
 \arguments{
-  \item{files}{ is the name of the processed MAGE-TAB file to be read. }
+  \item{procfile}{ is the name of the processed MAGE-TAB file to be read. }
   \item{path}{ is the name of the directory where to find this file.}
 }
 
@@ -23,7 +23,7 @@ getcolproc(files, path = ".")
   Maintainer: <audrey@ebi.ac.uk>  
 }
 \examples{
-files = getAE("E-MEXP-1422", type = "processed")
-cnames = getcolproc(files$procfiles, path = ".")
+mexp1422 = getAE("E-MEXP-1422", type = "processed")
+cnames = getcolproc(mexp1422$procfile, path = ".")
 }
 \keyword{datasets}

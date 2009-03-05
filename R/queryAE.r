@@ -12,6 +12,29 @@ getelt = function(x, node, element)
     return(elt3)
   }
 
+geteltmulti = function(x, node, element1, element2)
+ {
+elt = sapply(1:length(xmlRoot(x)), function(i){
+     if(length(grep(node,names(xmlRoot(x)[[i]])))  != 0){
+          lapply(1:length(xmlElementsByTagName(xmlRoot(x)[[i]], node)), function(j) {
+        extr = unlist(xmlElementsByTagName(xmlRoot(x)[[i]], node)[[j]])
+
+        e1 = extr[names(extr)== element1]
+        e2 = extr[names(extr)== element2]
+
+        paste(e1, e2, sep="=")
+       })} else "NA" })
+
+elt2 = lapply(elt, function(i) if(length(i) == 0) "NA" else i)
+
+elt3 = lapply(elt2, function(i) unlist(i))
+
+elt4 = unlist(lapply(elt3, function(i) do.call("paste",c(as.list(i),sep=" | "))))
+
+   names(elt4) = NULL
+   return(elt4)
+ }
+
 queryAE = function(keywords = NULL, species = NULL)
   {
     if(!is.null(keywords))
@@ -49,11 +72,10 @@ queryAE = function(keywords = NULL, species = NULL)
     experimentdesign = getelt(x, node = "experimentdesign",
       element = "experimentdesign.children.text.value")   
   
-    experimentalfactor = getelt(x, node = "experimentalfactor",
-      element = "experimentalfactor.children.value.children.text.value")
+    experimentalfactor = geteltmulti(x, node = "experimentalfactor",
+      element1 = "children.name.children.text.value",
+      element2 = "children.value.children.text.value")
 
     xmlparsed = data.frame(ID = ID, Raw = Raw, Processed = Processed, ReleaseDate = date, PubmedID = pmid, Species = spec, ExperimentDesign = experimentdesign, ExperimentFactors = experimentalfactor)
     return(xmlparsed)
   }
-
-

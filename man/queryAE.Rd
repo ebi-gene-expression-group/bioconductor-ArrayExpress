@@ -16,10 +16,12 @@ queryAE(keywords = NULL, species = NULL)
   \item{species}{ the specie(s) of interest.}
 }
 \value{
-  \code{ A dataframe with character strings with all the ArrayExpress dataset
-    identifiers which correspond to the query in the first column. The
-    two following columns are filled with 'Yes' and 'No' according to
-    the existence of raw and processed data.}
+  \code{ A dataframe with all the ArrayExpress dataset
+         identifiers which correspond to the query in the first column.
+         The following columns contain information about these datasets, 
+         such as the number of raw files, the number of data processed, 
+         the release date on the database, the pubmed ID, the species, 
+         the experiment design and the experimental factors.}
 }
 \seealso{\code{\link{ArrayExpress}}, \code{\link{getAE}}, \code{\link{magetab2bioc}}}
 \author{

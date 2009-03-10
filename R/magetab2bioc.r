@@ -1,4 +1,10 @@
-magetab2bioc = function(rawfiles, sdrf, idf, adf, path = ".", rawcol = NULL, save = TRUE) {  
+magetab2bioc = function(files, rawcol = NULL, save = TRUE) { 
+  rawfiles = files$rawfiles
+  sdrf = files$sdrf
+  idf = files$idf
+  adf = files$adf
+  path = files$path
+ 
   if(!is.null(rawcol))
     {
       if(length(rawcol) > 1 && !is(rawcol,"list"))

@@ -7,15 +7,15 @@
   ExpressionSet or a NChannelSet.
 }
 \usage{
-magetab2bioc(rawfiles, sdrf, idf, adf, path = ".", rawcol = NULL, save = TRUE)
+magetab2bioc(files, rawcol = NULL, save = TRUE)
 }
 \arguments{
-  \item{rawfiles}{ all the expression files to use to create the object.
-  The content of the raw.zip MAGE-TAB file.}
-  \item{sdrf}{ the sdrf file from MAGE-TAB. }
-  \item{idf}{ the idf file from MAGE-TAB. }
-  \item{adf}{ the adf file from MAGE-TAB. }
-  \item{path}{ is the name of the directory in which the files downloaded on the ArrayExpress repository will be extracted.}
+  \item{files}{ A list as given from getAE function. Containing the following elements:
+ 'rawfiles': all the expression files to use to create the object. The content of the raw.zip MAGE-TAB file.
+ 'sdrf': the name of the sdrf file from MAGE-TAB.
+  'idf': the name of the idf file from MAGE-TAB.
+  'adf': the name of the adf file from MAGE-TAB.
+  'path': is the name of the directory in which the files downloaded on the ArrayExpress repository will be extracted.}
   \item{rawcol}{ by default, the columns are automatically selected
     according to the scanner type. If the scanner is unknown or if the
     user wants to use different columns than the default, the argument
@@ -46,7 +46,6 @@ magetab2bioc(rawfiles, sdrf, idf, adf, path = ".", rawcol = NULL, save = TRUE)
 }
 \examples{
 MEXP1422 = getAE("E-MEXP-1422")
-MEXP1422set = magetab2bioc(rawfiles = MEXP1422$rawfiles, sdrf =
-  MEXP1422$sdrf, idf = MEXP1422$idf, adf = MEXP1422$adf)
+MEXP1422set = magetab2bioc(files = MEXP1422)
 }
 \keyword{datasets}

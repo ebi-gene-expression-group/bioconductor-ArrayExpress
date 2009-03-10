@@ -8,12 +8,13 @@
 }
 
 \usage{
-getcolproc(procfile, path = ".")
+getcolproc(files)
 }
 
 \arguments{
-  \item{procfile}{ is the name of the processed MAGE-TAB file to be read. }
-  \item{path}{ is the name of the directory where to find this file.}
+  \item{files}{ A list as given from getAE function. Containing the following elements:
+  'procfile': is the name of the processed MAGE-TAB file to be read. 
+  'path': is the name of the directory where to find this file.}
 }
 
 \seealso{\code{\link{ArrayExpress}}, \code{\link{getAE}},
@@ -24,6 +25,6 @@ getcolproc(procfile, path = ".")
 }
 \examples{
 mexp1422 = getAE("E-MEXP-1422", type = "processed")
-cnames = getcolproc(mexp1422$procfile, path = ".")
+cnames = getcolproc(mexp1422)
 }
 \keyword{datasets}

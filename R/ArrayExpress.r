@@ -1,6 +1,6 @@
 ArrayExpress = function(input, path = ".", save = TRUE, rawcol = NULL)
   {
-    if(!save) on.exit({try(file.remove(file.path(path,extract$drf))); try(file.remove(file.path(path,extract$idf)))})
+    if(!save) on.exit({try(file.remove(file.path(path,extract$drf))); try(file.remove(file.path(path,extract$idf))); try(file.remove(file.path(path,extract$adf)))})
    
     ## Extracting the data if the checking was fine
     extract = getAE(input, path, save, type = "raw")

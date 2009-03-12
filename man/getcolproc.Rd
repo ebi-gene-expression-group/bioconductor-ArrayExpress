@@ -1,10 +1,10 @@
 \name{getcolproc}
 \alias{getcolproc}
 \docType{data}
-\title{ Give the possible column names to from processed MAGE-TAB files }
+\title{ Return the possible column names to from processed MAGE-TAB files }
 \description{
   \code{getcolproc} extracts the column names from processed MAGE-TAB and
-  return them, to be given as an input of the function \code{procset} 
+  return them. The output is needed to call the function \code{procset}.
 }
 
 \usage{
@@ -12,13 +12,17 @@ getcolproc(files)
 }
 
 \arguments{
-  \item{files}{ A list as given from getAE function. Containing the following elements:
-  'procfile': is the name of the processed MAGE-TAB file to be read. 
-  'path': is the name of the directory where to find this file.}
+  \item{files}{ A list as given from \code{\link{getAE}}
+    function. Containing the following elements:  
+    \describe{
+
+  \item{procfile}{procfile is the name of the processed MAGE-TAB file to be read.}
+  \item{path}{is the name of the directory where to find this file.}
+  }
+}
 }
 
-\seealso{\code{\link{ArrayExpress}}, \code{\link{getAE}},
-  \code{\link{magetab2bioc}}, \code{\link{procset}}, \code{\link{queryAE}}}
+\seealso{\code{\link{queryAE}}, \code{\link{getAE}}, \code{\link{procset}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

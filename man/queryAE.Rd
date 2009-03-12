@@ -3,9 +3,9 @@
 \docType{data}
 \title{ XML query of the ArrayExpress repository }
 \description{
-  \code{queryAE} queries ArrayExpress with keywords and give a list of
-  ArrayExpress identifiers and their availability as raw and/or
-  processed data, as an output.
+  \code{queryAE} queries the ArrayExpress database with keywords and
+  give a dataframe with  ArrayExpress identifiers and related
+  information, as an output.
 }
 \usage{
 queryAE(keywords = NULL, species = NULL)
@@ -23,7 +23,7 @@ queryAE(keywords = NULL, species = NULL)
          the release date on the database, the pubmed ID, the species, 
          the experiment design and the experimental factors.}
 }
-\seealso{\code{\link{ArrayExpress}}, \code{\link{getAE}}, \code{\link{magetab2bioc}}}
+\seealso{\code{\link{ArrayExpress}}, \code{\link{getAE}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

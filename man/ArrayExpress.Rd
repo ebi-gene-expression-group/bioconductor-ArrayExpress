@@ -3,17 +3,20 @@
 \docType{data}
 \title{ R objects from ArrayExpress database }
 \description{
-  \code{ArrayExpress} produces an AffyBatch, an ExpressionSet or an
-  NChannelSet from a raw data set from the ArrayExpress
-  database. \code{ArrayExpress} needs an Internet connection.
+  \code{ArrayExpress} produces an
+  \code{\link[affy:class.AffyBatch]{AffyBatch}}, an
+  \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}}
+  or a \code{\link[Biobase:class.NChannelSet]{NChannelSet}} from a raw
+  dataset from the ArrayExpress database.
+  \code{ArrayExpress} needs an Internet connection.
 }
 \usage{
 ArrayExpress(input, path = ".", save = TRUE, rawcol = NULL)
 }
 \arguments{
   \item{input}{ an ArrayExpress identifier.
-    The package currently covers 96\% of the raw data sets of the
-    database and is not currently dealing with the processed data.}
+    The function currently covers 96\% of the raw data sets of the
+    database.}
   \item{path}{ the name of the directory in which the files
     downloaded on the ArrayExpress repository will be extracted. The
     default is the current directory.}
@@ -42,7 +45,7 @@ ArrayExpress(input, path = ".", save = TRUE, rawcol = NULL)
   If several array designs are used in the data set, the output is a
   list with an object for each array design.
 }
-\seealso{\code{\link{queryAE}}, \code{\link{getAE}}, \code{\link{magetab2bioc}}}
+\seealso{\code{\link{queryAE}}, \code{\link{getAE}}, \code{\link{magetab2bioc}}, \code{\link{getcolproc}}, \code{\link{procset}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

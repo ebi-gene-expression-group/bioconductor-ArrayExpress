@@ -27,14 +27,14 @@
 \section{ArrayExpress database} 
 
 ArrayExpress is a public repository for transcriptomics and related data, which is aimed at storing MIAME-compliant data in accordance with MGED recommendations. The ArrayExpress Data Warehouse stores gene-indexed expression profiles and related measurements from a curated subset of experiments in the repository.
-Currently, 100,000 hybridizations are represented in ArrayExpress. Please visit http://www.ebi.ac.uk/arrayexpress/ for more information on the database.
+Currently, around 220 000 hybridizations are represented in ArrayExpress. Please visit http://www.ebi.ac.uk/arrayexpress/ for more information on the database.
 
 \section{MAGE-TAB format}
-In the repository, for each dataset, ArrayExpress stores a MAGE-TAB document with standardized format. A MAGE-TAB document contains four different types of files Investigation Description Format (IDF), Array Design Format (ADF), Sample and Data Relationship Format (SDRF), and Raw and processed data files. The tab-delimited IDF file contains top level information about the experiment including title, description, submitter contact details and protocols. The tab-delimited ADF file describes the design of an array, e.g., what sequence is located at each position on an array and what the annotation of this sequence is. The tab-delimited SDRF file contains the sample annotation and the relationship between arrays as provided by the submitter. The raw zip file contains the raw files (like the CEL files for Affymetrix chips or the GPR files from the GenePix scanner for instance),  and the processed zip file contains all processed data in one generic tab delimited text format.
+In the repository, for each dataset, ArrayExpress stores a MAGE-TAB document with standardized format. A MAGE-TAB document contains five different types of files Investigation Description Format (IDF), Array Design Format (ADF), Sample and Data Relationship Format (SDRF), the raw data files and the processed data files. The tab-delimited IDF file contains top level information about the experiment including title, description, submitter contact details and protocols. The tab-delimited ADF file describes the design of an array, e.g., what sequence is located at each position on an array and what the annotation of this sequence is. The tab-delimited SDRF file contains the sample annotation and the relationship between arrays as provided by the submitter. The raw zip file contains the raw files (like the CEL files for Affymetrix chips or the GPR files from the GenePix scanner for instance),  and the processed zip file contains all processed data in one generic tab delimited text format.
 
 \section{Querying the database}
 
-With the \Rfunction{queryAE} function, you can query the ArrayExpress repository. Two arguments are available, 'keywords' and 'species'. You can use both of them simultaneously or each of them independently, depending on your needs. If you want to use several words, they need to be separated by a '+' without any space.
+It is possible to query the ArrayExpress repository, using the \Rfunction{queryAE} function. Two arguments are available, 'keywords' and 'species'. You can use both of them simultaneously or each of them independently, according to your needs. If you want to use several words, they need to be separated by a '+' without any space.
 Here is an example where the object \Robject{sets} contains the identifiers of all the datasets for which the word 'leukemia' was found in the description and for which the Homo sapiens is the studied species.
 You need to be connected to Internet to have access to the database.
 
@@ -44,13 +44,15 @@ sets = queryAE(keywords = "leukemia", species = "homo+sapiens")
 @
 %
 
-In October 2008, this query was giving 167 identifiers. The output is a dataframe with the identifiers and two columns giving the availability of the raw and processed data. When raw and processed data are available for the same dataset, a unique identifier is given for both. There is no way to distinguish between a processed and a raw dataset just from the identifier. The column 'Raw' from the output of \Rfunction{ArrayExpress} allows to know if the raw data are available for a data set.
+In March 2009, this query was giving 202 identifiers. The output is a dataframe with the identifiers and 7 columns giving the number of data raw and processed. When raw and processed data are available for the same dataset, a unique identifier is given for both. There is no way to distinguish between a processed and a raw dataset just from the identifier. The column 'Raw' from the output of \Rfunction{queryAE} allows to know if the raw data are available for a data set.
+The following columns contain the release date of the dataset on the database, the pubmed ID of the publication related to the dataset, the species, the experiment design and the experimental factors.
+The experiment design defines what was studied by the authors, such as time series, disease state or compound treatment. The experimental factors are the values of the studied factors, "Day 1", "Day 2" for instance.
 For a more extended querying mode, the ArrayExpress website offers an advanced query interface with detailed results.
 
 
 \section{Import an ArrayExpress dataset into R}
 
-\subsection{Call of the function \Rfunction{ArrayExpress}}
+\subsection{Call of the function ArrayExpress}
 Once you know which identifier you wish to retrieve, the function \Rfunction{ArrayExpress} can be called, using the following arguments:
 \begin{itemize}
 \item \emph{input}: an ArrayExpress identifier for which the raw data are available.
@@ -95,7 +97,7 @@ eset = try(ArrayExpress("E-DKFZ-1"))
 @
 %
 
-Here, the object cannot be built because the columns are not recognized. The error message also gives a list of possible column names. We can then call the function again, feeding the argument 'columns' with the appropriate column names.
+Here, the object cannot be built because the columns are not recognized. The error message also gives a list of possible column names. We can then call the function again, feeding the argument 'rawcol' with the appropriate column names.
 
 <<ArrayExpress-withcolumns, results=hide>>=
 eset = ArrayExpress("E-DKFZ-1",
@@ -113,36 +115,70 @@ It is possible to only download the data, by calling the function \Rfunction{get
 Here, you also need Internet connection to access the database.
 
 <<getAE-full>>=
-full = getAE("E-MEXP-1422", type = "full")
+mexp1422 = getAE("E-MEXP-1422", type = "full")
 @
 
 Here, the output is a list of all the files that have been downloaded and extracted in the directory 'path'.
 
-\section{Build an R object from local MAGE-TAB}
+\section{Build an R object from local raw MAGE-TAB}
 
 If you have your own raw MAGE-TAB data or if you want to build an R object from existing MAGE-TAB data that are stored locally on your computer. The function \Rfunction{magetab2bioc} can convert them into an R object.
 
 The arguments for the \Rfunction{magetab2bioc} are:
 \begin{itemize}
-\item \emph{rawfiles} all the expression files to use to create the object.
-  The content of the raw.zip MAGE-TAB file.
-  \item \emph{sdrf} the sdrf file from MAGE-TAB. 
-  \item \emph{idf} the idf file from MAGE-TAB. 
-  \item \emph{adf} the adf file from MAGE-TAB. 
-  \item \emph{path} see the ArrayExpress function arguments. 
-  \item \emph{rawcol} see the ArrayExpress function arguments. 
-  \item \emph{save} see the ArrayExpress function arguments. 
+\item \emph{files} A list as given from \Rfunction{getAE} function. Containing the elements 'rawfiles' (the expression files to use to create the object), 'sdrf' (name of the sdrf file), 'idf' (name of the idf file), 'adf' (name of the adf file) and 'path' (the name of the directory containing these files).
+\item \emph{rawcol}  by default, the columns are automatically selected
+    according to the scanner type. If the scanner is unknown, the argument
+    'rawcol' can be set. For two colour arrays it must be a list with
+    the fields 'R', 'G', 'Rb' and 'Gb' giving the column names to be
+    used for red and green foreground and background. For one colour
+    arrays, it must be a character string with the column name to be
+    used. These column names must correspond to existing column names of
+    the expression files.
+\item \emph{save} if TRUE, the files used to create the object will not be deleted from 'path' after executing the function.
 \end{itemize}
 
 As an example, we can use the files that we have downloaded in the previous example.
 
 <<magetab2bioc-full>>=
-rawset= magetab2bioc(files = full)
+rawset= magetab2bioc(files = mexp1422)
 @
 %
 The object \Robject{rawset} is an \Rclass{AffyBatch}.
 
-\section{ArrayExpress package efficiency}
-For this first release, the \Rpackage{ArrayExpress} package works well on 96\% of the raw data available on the database. Ongoing work aims at developing a function to deal with the processed data as well.
+\section{Build an R object from local processed MAGE-TAB}
+Processed data in the database are less uniform as processing methods vary a lot. To import a processed dataset from ArrayExpress, three steps are required: (i) download the dataset using \Rfunction{getAE}, (ii) identify which column is of interest thanks to \Rfunction{getcolproc}, (iii) create the R object with \Rfunction{procset}. 
+
+\subsection{Identification of the columns to extract}
+
+Once the data are downloaded, we need to know the different column names available in the processed file to be able to choose a relevant one to extract. The function \Rfunction{getcolproc} needs, as an input, a list containing two slots:
+\begin{itemize}
+\item \emph{procfile} the name of the processed expression file.
+\item \emph{path} the name of the directory containing the 'procfile'.
+\end{itemize}
+This kind of list is given as an output from the function \Rfunction{getAE}.
+
+<<getcolproc>>=
+cn = getcolproc(mexp1422)
+show(cn)
+@
+
+\Robject{cn} is a character vector with the available column names in the 'procfile'.
+
+\subsection{Creation of the object}
+We can now create the \Rclass{ExpressionSet} using \Rfunction{procset}. This function has two arguments:
+\begin{itemize}
+\item \emph{files} a list as given by \Rfunction{getAE} containing the names of the processed, sdrf, idf, adf files and the path.
+\item \emph{procol} the name of the column chosen after using \Rfunction{getcolproc}.
+\end{itemize}
+
+<<procset>>=
+proset = procset(mexp1422, cn[2])
+@ 
+
+\Robject{proset} is an \Rclass{ExpressionSet} containing the processed log(ratio) of the dataset E-MEXP-1422.
+
+
+
 
 \end{document}

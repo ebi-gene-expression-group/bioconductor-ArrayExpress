@@ -111,7 +111,7 @@ Then \Robject{eset} is created. However, there is still a warning, the \Rclass{p
 
 \section{Download an ArrayExpress dataset on your local machine}
 
-It is possible to only download the data, by calling the function \Rfunction{getAE}. The arguments 'input', 'path', 'save' are the same than for the \Rfunction{ArrayExpress} function. The argument 'type' determines  if you retrieve the MAGE-TAB files with the raw data only (by setting 'type' to 'raw'), the MAGE-TAB files with the processed data only (by setting 'type' to 'processed') or if you retrieve all the MAGE-TAB files, both raw and processed (by setting 'type' to 'full').
+It is possible to only download the data, by calling the function \Rfunction{getAE}. The arguments 'input' and 'path' are the same than for the \Rfunction{ArrayExpress} function. The argument 'type' determines  if you retrieve the MAGE-TAB files with the raw data only (by setting 'type' to 'raw'), the MAGE-TAB files with the processed data only (by setting 'type' to 'processed') or if you retrieve all the MAGE-TAB files, both raw and processed (by setting 'type' to 'full').
 Here, you also need Internet connection to access the database.
 
 <<getAE-full>>=
@@ -135,7 +135,6 @@ The arguments for the \Rfunction{magetab2bioc} are:
     arrays, it must be a character string with the column name to be
     used. These column names must correspond to existing column names of
     the expression files.
-\item \emph{save} if TRUE, the files used to create the object will not be deleted from 'path' after executing the function.
 \end{itemize}
 
 As an example, we can use the files that we have downloaded in the previous example.

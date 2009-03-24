@@ -1,7 +1,6 @@
-getAE = function (input, path = ".", save = TRUE, type = "full", extract = TRUE) {
+getAE = function (input, path = ".", type = "full", extract = TRUE) {
   oldopt = options()$HTTPUserAgent
   on.exit(options(HTTPUserAgent = oldopt))
-  if(!save) on.exit({try(file.remove(file.path(path, rawdata)));try(file.remove(file.path(path, procdata)))})
   
   ## Building the link with the input name
   url = "http://www.ebi.ac.uk/microarray-as/ae/files"

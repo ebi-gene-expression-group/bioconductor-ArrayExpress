@@ -7,7 +7,7 @@
   ExpressionSet or a NChannelSet.
 }
 \usage{
-magetab2bioc(files, rawcol = NULL, save = TRUE)
+magetab2bioc(files, rawcol = NULL)
 }
 \arguments{
 
@@ -30,7 +30,6 @@ magetab2bioc(files, rawcol = NULL, save = TRUE)
     used. These column names must correspond to existing column names of
     the expression files.}
   
-  \item{save}{ if TRUE, the files downloaded from the database will not be deleted from path after executing the function.}
 }
 
 \value{

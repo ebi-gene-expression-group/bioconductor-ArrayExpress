@@ -1,4 +1,4 @@
-magetab2bioc = function(files, rawcol = NULL, save = TRUE) { 
+magetab2bioc = function(files, rawcol = NULL) { 
   rawfiles = files$rawfiles
   sdrf = files$sdrf
   idf = files$idf
@@ -14,8 +14,6 @@ magetab2bioc = function(files, rawcol = NULL, save = TRUE) {
       if(is(rawcol,"list") && !("R" %in% names(rawcol) && "G" %in% names(rawcol)))
         stop("The names of the columns must contain R and G.")
     }
-
-  if(!save) on.exit(try(file.remove(file.path(path, rawfiles))))
 
   notuse = grep(rawfiles, pattern = "info.txt$|idf.txt$|processed|sdrf.txt$|.log$|RData|class|log")
   if(length(notuse) != 0)

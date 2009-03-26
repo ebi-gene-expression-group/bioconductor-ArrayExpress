@@ -27,11 +27,8 @@ extract.zip = function (file, unzip = getOption("unzip"), extract_path = dirname
         }
     }
     else {
-      rc = .Internal(int.unzip(file.path(path, topic),NULL, path)) ##works
-      rc = attr(rc,"extracted")
-      rc = paste("E-",na.omit(sapply(1:length(rc), function(i) strsplit(rc,"E-")[[i]][2])),sep="")
-      if(length(grep("zip",rc)) != 0)
-        rc = rc[-grep("zip",rc)]
+      rc = unzip(zipfile = file.path(path, topic), files = NULL, list = TRUE, exdir = path) ##works
+      rc = as.character(rc[,1])
     }
   } else stop(sprintf("%s does not exist",file.path(path, topic)))
   

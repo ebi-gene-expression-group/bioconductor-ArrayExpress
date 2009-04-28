@@ -7,7 +7,7 @@
   ArrayExpress dataset.
 }
 \usage{
-getAE(input, path = ".", type = "full", extract = TRUE)
+getAE(input, path = getwd(), type = "full", extract = TRUE)
 }
 \arguments{
   \item{input}{ is an ArrayExpress identifier. }
@@ -21,7 +21,7 @@ getAE(input, path = ".", type = "full", extract = TRUE)
   \code{ A list with the names of the files that
     have been downloaded and extracted. }
 }
-\seealso{\code{\link{magetab2bioc}}, \code{\link{getcolproc}}}
+\seealso{\code{\link{ArrayExpress}}, \code{\link{magetab2bioc}}, \code{\link{getcolproc}}, \code{\link{procset}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

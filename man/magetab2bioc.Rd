@@ -7,7 +7,7 @@
   ExpressionSet or a NChannelSet.
 }
 \usage{
-magetab2bioc(files, rawcol = NULL)
+magetab2bioc(files, rawcol = NULL, save = TRUE)
 }
 \arguments{
 
@@ -29,7 +29,9 @@ magetab2bioc(files, rawcol = NULL)
     arrays, it must be a character string with the column name to be
     used. These column names must correspond to existing column names of
     the expression files.}
-  
+
+   \item{save}{ if TRUE, the files used to create the object will not be deleted from path after executing the function.}
+ 
 }
 
 \value{
@@ -44,7 +46,7 @@ magetab2bioc(files, rawcol = NULL)
   If several array designs are used in the dataset, the output is a
   list with an object for each array design.  
 }
-\seealso{\code{\link{queryAE}}, \code{\link{getAE}}}
+\seealso{\code{\link{ArrayExpress}}, \code{\link{queryAE}}, \code{\link{getAE}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

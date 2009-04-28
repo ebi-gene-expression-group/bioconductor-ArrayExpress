@@ -3,5 +3,7 @@ importFrom("XML", "xmlTreeParse",
            "xmlElementsByTagName",
            "getNodeSet",
            "xmlGetAttr")
+importFrom("limma", "read.maimages")
+importFrom("affy", "ReadAffy")
 export("ArrayExpress", "getAE", "queryAE", "magetab2bioc", "getcolproc", "procset", "extract.zip")
 

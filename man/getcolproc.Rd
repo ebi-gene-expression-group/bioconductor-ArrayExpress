@@ -22,7 +22,7 @@ getcolproc(files)
 }
 }
 
-\seealso{\code{\link{queryAE}}, \code{\link{getAE}}, \code{\link{procset}}}
+\seealso{\code{\link{ArrayExpress}}, \code{\link{queryAE}}, \code{\link{getAE}}, \code{\link{procset}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

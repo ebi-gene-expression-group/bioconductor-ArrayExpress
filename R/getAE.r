@@ -1,4 +1,5 @@
-getAE = function (input, path = ".", type = "full", extract = TRUE) {
+getAE = function (input, path = getwd(), type = "full", extract = TRUE)
+{
   oldopt = options()$HTTPUserAgent
   on.exit(options(HTTPUserAgent = oldopt))
   
@@ -22,13 +23,13 @@ getAE = function (input, path = ".", type = "full", extract = TRUE) {
         rawfiles = NULL
       } else  {
 	if(extract==TRUE)
-	        rawfiles = extract.zip(file = rawdata)
+          rawfiles = extract.zip(file = rawdata)
 	else
-		rawfiles = rawdata
+          rawfiles = rawdata
         rawdata = basename(rawdata) }
     }
   
-    if(type == "full" || type == "processed")
+  if(type == "full" || type == "processed")
     {
       ##PROCESSED DATA######################
       ## Saving temporarily the processed data
@@ -97,7 +98,7 @@ getAE = function (input, path = ".", type = "full", extract = TRUE) {
     idffile = NULL } else idffile = basename(idffile)
   
   ##EXPORTING RESULTS######################
-    if(type == "raw")
+  if(type == "raw")
     {
       procdata = NULL
       procfile = NULL

@@ -29,9 +29,9 @@ magetab2bioc = function(files, rawcol = NULL, save = TRUE)
 
   ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$"))
 
-  if(inherits(ph, 'try-error') && length(grep(".cel",files)) == 0)
+  if(inherits(ph, 'try-error') && length(grep(".cel",files, ignore.case = TRUE)) == 0)
     stop(sprintf("No sdrf file available. The object cannot be built."))
-  if(inherits(ph, 'try-error') && length(grep(".cel",files)) != 0)
+  if(inherits(ph, 'try-error') && length(grep(".cel",files, ignore.case = TRUE)) != 0)
     {
       warning(sprintf("No sdrf file available. The object may not be built."))
       adr = "Empty"
@@ -50,14 +50,14 @@ magetab2bioc = function(files, rawcol = NULL, save = TRUE)
 
       adr = unique(pData(ph)$Array.Design.REF)
       adr = adr[adr != ""]
-      if((length(adr) == 0 || is.na(adr)) && length(grep(".cel",files)) != 0)
+      if((length(adr) == 0 || is.na(adr)) && length(grep(".cel",files, ignore.case = TRUE)) != 0)
         warning("Cannot find the array design reference in the sdrf file. The object may not be built.")
-      if((length(adr) == 0 || is.na(adr)) && length(grep(".cel",files)) == 0)
+      if((length(adr) == 0 || is.na(adr)) && length(grep(".cel",files, ignore.case = TRUE)) == 0)
         stop("Cannot find the array design reference in the sdrf file. The object cannot be built.")
     }
     
   ## Building the S4 class object
-  if(length(grep(".cel",files)) == length(files))
+  if(length(grep(".cel",files, ignore.case = TRUE)) == length(files))
     {
       if(length(adr) == 1)
         raweset = try(AB(i = 1, files, path, ph, adr, adf, idf))
@@ -67,7 +67,7 @@ magetab2bioc = function(files, rawcol = NULL, save = TRUE)
     }
    
   ## Non Affymetrix data
-  if(length(grep(".cel",files)) == 0)
+  if(length(grep(".cel",files, ignore.case = TRUE)) == 0)
     {
       if(length(adr) == 1)
         raweset = try(nonAB(i = 1, files, path, ph, rawcol, adr, adf, idf))

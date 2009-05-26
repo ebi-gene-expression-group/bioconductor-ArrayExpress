@@ -178,6 +178,51 @@ proset = procset(mexp1422, cn[2])
 \Robject{proset} is an \Rclass{ExpressionSet} containing the processed log(ratio) of the dataset E-MEXP-1422.
 
 
+\section{Example of a standard microarray analysis using data from ArrayExpress}
+In this section, we are briefly describing an analysis from the data import to the identification of differentially expressed genes, of data publicly available on ArrayExpress.
 
+The first step consists of importing a dataset from ArrayExpress. We chose E-MEXP-1416. This dataset studies the transcription profiling of melanized domamine neurons isolated from male and female patients with Parkinson disease to investigate gender differences.
+<<import, results=hide>>=
+AEset = ArrayExpress("E-MEXP-1416")
+@ 
+
+As AEset is an Affymetrix experiment, we can use RMA normalisation to process the raw data, please read the rma function help.
+<<norm, results=hide>>=
+library("affy")
+AEsetnorm = rma(AEset)
+@ 
+
+To check the normalisation efficiency, we can run a quality assessment. For details on the arguments used, please read the arrayQualityMetrics vignette.
+<<qanorm, results=hide>>=
+fac = grep("FactorValue",colnames(pData(AEset)), value=T)
+library("arrayQualityMetrics")
+qanorm = arrayQualityMetrics(AEsetnorm, 
+  outdir = "QAnorm", 
+  intgroup = fac, 
+  grouprep = TRUE)
+@ 
+
+Now that we have ensured that the data are well processed, we can search for differentially expressed genes using the package limma. To understand the details of each steps, please see the limma user guide.
+<<limma, results=hide>>=
+library("limma")
+facs =  pData(AEset)[,fac]
+facs[facs[,2]=="female",2]="F"
+facs[facs[,2]=="male",2]="M"
+facs[facs[,1]=="Parkinson disease",1]="parkinson"
+facs = paste(facs[,1],facs[,2], sep=".")
+f = factor(facs)
+design = model.matrix(~0+f)
+colnames(design) = levels(f)
+fit = lmFit(AEsetnorm, design)
+cont.matrix = makeContrasts(normal.FvsM = normal.F-normal.M,             
+    parkinson.FvsM = parkinson.F-parkinson.M,  
+    Diff=(parkinson.F-parkinson.M)-(normal.F-normal.M),
+    levels=design)
+fit2 = contrasts.fit(fit, cont.matrix)
+fit2 = eBayes(fit2)
+res = topTable(fit2, coef = "parkinson.FvsM", adjust = "BH")
+@
+
+Here we end up with a list of genes that are differentially expressed between the female and the male patients having Parkinson's disease, which was the topic of the paper, but one can perform other comparisons with the same data.
 
 \end{document}

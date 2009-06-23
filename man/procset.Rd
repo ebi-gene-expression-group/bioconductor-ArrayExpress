@@ -25,8 +25,6 @@ procset(files, procol)
   Maintainer: <audrey@ebi.ac.uk>  
 }
 \examples{
-mexp1422 = getAE("E-MEXP-1422", type = "processed")
-cnames = getcolproc(mexp1422)
-MEXP1422 = procset(mexp1422, cnames[2])
+# An example can be found in the help of the getAE function.
 }
 \keyword{datasets}

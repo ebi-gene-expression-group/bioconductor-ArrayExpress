@@ -52,7 +52,6 @@ magetab2bioc(files, rawcol = NULL, save = TRUE)
   Maintainer: <audrey@ebi.ac.uk>  
 }
 \examples{
-MEXP1422 = getAE("E-MEXP-1422")
-MEXP1422set = magetab2bioc(files = MEXP1422)
+# An example can be found in the help of the getAE function.
 }
 \keyword{datasets}

@@ -29,13 +29,10 @@ queryAE(keywords = NULL, species = NULL)
   Maintainer: <audrey@ebi.ac.uk>  
 }
 \examples{
-## To retrieve all the identifiers of cancer data sets
-Cancer = queryAE(keywords = "cancer")
+## To retrieve all the identifiers of pneumonia data sets
+pneumo = queryAE(keywords = "pneumonia")
 
-## To retrieve all the identifiers of cancer data sets studied in human
-CancerHS = queryAE(keywords = "cancer", species = "homo+sapiens")
-
-## To retrieve all the identifiers of breast cancer data sets studied in human
-BreastCancerHS = queryAE(keywords = "breast+cancer", species = "homo+sapiens")
+## To retrieve all the identifiers of pneumonia data sets studied in human
+pneumoHS = queryAE(keywords = "pneumonia", species = "homo+sapiens")
 }
 \keyword{datasets}

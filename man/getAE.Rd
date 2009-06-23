@@ -27,6 +27,14 @@ getAE(input, path = getwd(), type = "full", extract = TRUE)
   Maintainer: <audrey@ebi.ac.uk>  
 }
 \examples{
-TABM25 = getAE("E-TABM-25", type = "raw")
+mexp1422 = getAE("E-MEXP-1422", type = "full")
+
+## Build a an ExpressionSet from the raw data
+MEXP1422raw = magetab2bioc(files = mexp1422)
+
+## Build a an ExpressionSet from the processed data
+cnames = getcolproc(mexp1422)
+MEXP1422proc = procset(mexp1422, cnames[2])
+
 }
 \keyword{datasets}

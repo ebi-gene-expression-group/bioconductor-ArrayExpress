@@ -77,7 +77,7 @@ assign.pheno.ncs = function(ph,files,raweset)
     samples = new("AnnotatedDataFrame", data = cbind(all,gspe,rspe), varMetadata = metaData)
 
     rownames(pData(samples)) = gsub(".[a-z][a-z][a-z]$","",samples$Array.Data)
-    pData(samples) = pData(samples)[sampleNames(raweset)$R,]
+    pData(samples) = pData(samples)[sampleNames(raweset),]
     phenoData(raweset) = samples
     return(raweset)
   }

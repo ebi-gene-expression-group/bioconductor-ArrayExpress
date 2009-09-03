@@ -1,7 +1,7 @@
 \name{getcolproc}
 \alias{getcolproc}
 \docType{data}
-\title{ Return the possible column names to from processed MAGE-TAB files }
+\title{ Return the possible column names from processed MAGE-TAB files }
 \description{
   \code{getcolproc} extracts the column names from processed MAGE-TAB and
   return them. The output is needed to call the function \code{procset}.

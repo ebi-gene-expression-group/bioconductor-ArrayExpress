@@ -89,7 +89,7 @@ AB = function(i, files, path, ph, adr, adf, idf)
     if(adr == "Empty" || is.na(adr))
       {
         files = files[files != ""]
-        raweset = try(ReadAffy(filenames = paste(path,unique(files),sep = "/")))
+        raweset = try(ReadAffy(filenames = file.path(path,unique(files))))
       } else {  
         pht = pData(ph)
         if(!"Array.Data.File" %in% colnames(pht))
@@ -101,7 +101,7 @@ AB = function(i, files, path, ph, adr, adf, idf)
         files = files[files != ""]
 
         pht = ph[pht[,"Array.Design.REF"] == adr[i],]
-        raweset = try(ReadAffy(filenames = paste(path,unique(files),sep = "/")))
+        raweset = try(ReadAffy(filenames = file.path(path,unique(files))))
       }
     if(!inherits(raweset, "try-error"))
       {
@@ -157,12 +157,12 @@ nonAB = function(i, files, path, ph, rawcol, adr, adf, idf)
         stringsAsFactors =  FALSE)) ##read the QT file from the package
 
         
-    scanners = grep(">>>",qt[,1],value = T) ## list all the scanner names
+    scanners = grep(">>>",qt[,1],value = TRUE) ## list all the scanner names
     sl = grep(">>>",qt[,1]) ## list all the line numbers wherea scanner type starts
     scanners = gsub(">","",scanners)
     
     ## Parsing the first line of the expression file
-    allcnames = scan(paste(path,files[1],sep = "/"),what = "",nlines = 1, sep = "\t")
+    allcnames = scan(file.path(path,files[1]),what = "",nlines = 1, sep = "\t")
         
     ## Looking for the right column to use
     scanname = allcnames[grep(":",allcnames)]
@@ -172,8 +172,8 @@ nonAB = function(i, files, path, ph, rawcol, adr, adf, idf)
     fe = grep("Feature Extraction",scanname)
     if(length(feature) != 0)
       scanname = scanname[-feature[!feature %in% fe]]
-    if(is.null(rawcol) && length(scanname) == 0)
-      stop(sprintf("No scanner name is given. It is not possible to handle such a case. Try to set the argument 'rawcol' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",allcnames))
+    if(is.null(rawcol) && length(scanname) == 0) 
+       stop(sprintf("No scanner name is given. It is not possible to handle such a case. Try to set the argument 'rawcol' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",allcnames))
 
     st = unique(sapply(seq_len(length(scanname)), function(i) strsplit(scanname,":")[[i]][1]))
        

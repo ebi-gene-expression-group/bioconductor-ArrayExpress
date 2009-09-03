@@ -21,11 +21,17 @@ getAE = function (input, path = getwd(), type = "full", extract = TRUE)
         warning(paste(raw, " does not exist or is empty. \n"),sep="")
         rawdata = NULL
         rawfiles = NULL
+	    rawcol = NULL
       } else  {
 	if(extract==TRUE)
-          rawfiles = extract.zip(file = rawdata)
-	else
+	{
+	 rawfiles = extract.zip(file = rawdata)
+	 rawcol = getcolraw(path, rawfiles)
+	 }
+	else  {
           rawfiles = rawdata
+	  rawcol = NULL
+	  }
         rawdata = basename(rawdata) }
     }
   
@@ -51,7 +57,7 @@ getAE = function (input, path = getwd(), type = "full", extract = TRUE)
   ##SDRF DATA######################
   ## Download sdrf file
   samples = paste(exp,".sdrf.txt",sep="")
-  sdrffile = paste(path,basename(samples),sep="/")
+  sdrffile = file.path(path,basename(samples))
   sdrf = try(download.file(samples, sdrffile, mode="wb"))
   
   ## Download sdrf checking
@@ -73,7 +79,7 @@ getAE = function (input, path = getwd(), type = "full", extract = TRUE)
           features = paste(adr,".adf.txt",sep="")
           featureannot = paste(url3,adr,features,sep="/")
           
-          adffile = paste(path, basename(featureannot), sep="/")
+          adffile = file.path(path, basename(featureannot))
           adf = try(lapply(1:length(featureannot), function(i) download.file(featureannot[[i]], adffile[i], mode="wb")))
         } else {
           adffile = NULL
@@ -89,13 +95,15 @@ getAE = function (input, path = getwd(), type = "full", extract = TRUE)
   ##IDF DATA######################
   ## Download idf file
   annot = paste(exp,".idf.txt",sep="")
-  idffile = paste(path,basename(annot),sep="/")
+  idffile = file.path(path,basename(annot))
   idf = try(download.file(annot, idffile, mode="wb"))
 
   ## Download idf checking
   if(inherits(idf, 'try-error') || file.info(idffile)$size == 0) {
     warning(paste(idf, " does not exist or is empty. \n"),sep="")
     idffile = NULL } else idffile = basename(idffile)
+
+
   
   ##EXPORTING RESULTS######################
   if(type == "raw")
@@ -107,9 +115,10 @@ getAE = function (input, path = getwd(), type = "full", extract = TRUE)
     {
       rawdata = NULL
       rawfiles = NULL
+      rawcol = NULL
     }
 
-  res = list(path = path, rawdata = rawdata, rawfiles = rawfiles, procdata = procdata, procfile = procfile, sdrf = sdrffile, idf = idffile, adf = adffile)
+  res = list(path = path, rawdata = rawdata, rawfiles = rawfiles, rawcol = rawcol, procdata = procdata, procfile = procfile, sdrf = sdrffile, idf = idffile, adf = adffile)
   return(res)
   
 }#end of getAE

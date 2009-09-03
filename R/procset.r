@@ -6,7 +6,7 @@ procset = function(files, procol)
     idf = files$idf
     adf = files$adf
 
-    proctot = read.table(paste(path,"/",procfile, sep=""),header=T,sep="\t")
+    proctot = read.table(file.path(path,procfile),header=TRUE,sep="\t")
     procsel = proctot[-1, procol == proctot[1,]]
     colnames(procsel) = colnames(proctot[, procol == proctot[1,]])
     rownames(procsel) = proctot[-1,1]

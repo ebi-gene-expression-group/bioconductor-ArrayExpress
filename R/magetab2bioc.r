@@ -41,7 +41,7 @@ magetab2bioc = function(files, rawcol = NULL, save = TRUE)
   if(!inherits(ph, 'try-error'))
     {
       emptylines = which(sapply(seq_len(nrow(pData(ph))), function(i)
-        all(pData(ph)[i,] == "",na.rm = T)))
+        all(pData(ph)[i,] == "",na.rm = TRUE)))
       if(length(emptylines) != 0)
         pData(ph) = pData(ph)[-emptylines,]
       

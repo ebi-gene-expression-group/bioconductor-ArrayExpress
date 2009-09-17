@@ -14,12 +14,14 @@ procset(files, procol)
 \arguments{
   \item{files}{ is the list with the names of the processed, the sdrf,
     the adf and the idf files and the path of the data as given by
-    \code{\link{getAE}}. }
+    \code{\link[ArrayExpress]{getAE}}. }
   \item{procol}{ the name of the column to be extracted from the
-  file. Obtained using \code{\link{getcolproc}}.}
+  file. Obtained using \code{\link[ArrayExpress]{getcolproc}}.}
 }
 
-\seealso{\code{\link{queryAE}}, \code{\link{getAE}}, \code{\link{getcolproc}}}
+\seealso{\code{\link[ArrayExpress]{queryAE}},
+  \code{\link[ArrayExpress]{getAE}},
+  \code{\link[ArrayExpress]{getcolproc}}} 
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

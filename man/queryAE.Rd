@@ -23,9 +23,11 @@ queryAE(keywords = NULL, species = NULL)
          the release date on the database, the pubmed ID, the species, 
          the experiment design and the experimental factors.}
 }
-\seealso{\code{\link{ArrayExpress}}, \code{\link{getAE}}}
+\seealso{\code{\link[ArrayExpress]{ArrayExpress}},
+  \code{\link[ArrayExpress]{getAE}}} 
 \author{
-  Audrey Kauffmann 
+  Audrey Kauffmann
+  
   Maintainer: <audrey@ebi.ac.uk>  
 }
 \examples{

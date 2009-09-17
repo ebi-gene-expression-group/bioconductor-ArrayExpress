@@ -12,23 +12,27 @@ getcolproc(files)
 }
 
 \arguments{
-  \item{files}{ A list as given from \code{\link{getAE}}
+  \item{files}{ A list as given from \code{\link[ArrayExpress]{getAE}}
     function. Containing the following elements:  
     \describe{
 
-  \item{procfile}{procfile is the name of the processed MAGE-TAB file to be read.}
+  \item{procfile}{procfile is the name of the processed MAGE-TAB file to
+  be read.} 
   \item{path}{is the name of the directory where to find this file.}
   }
 }
 }
 
-\seealso{\code{\link{ArrayExpress}}, \code{\link{queryAE}}, \code{\link{getAE}}, \code{\link{procset}}}
+\seealso{\code{\link[ArrayExpress]{ArrayExpress}},
+  \code{\link[ArrayExpress]{queryAE}},
+  \code{\link[ArrayExpress]{getAE}},
+  \code{\link[ArrayExpress]{procset}}} 
 \author{
-  Audrey Kauffmann 
+  Audrey Kauffmann
+  
   Maintainer: <audrey@ebi.ac.uk>  
 }
-\examples{
-# An example can be found in the help of the getAE function.
-
-}
+%\examples{
+%# An example can be found in the help of the getAE function.
+%}
 \keyword{datasets}

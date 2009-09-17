@@ -17,7 +17,9 @@ getcolraw(path, rawfiles)
   \item{path}{is the name of the directory where to find these files.}
 }
 
-\seealso{\code{\link{ArrayExpress}}, \code{\link{queryAE}}, \code{\link{getAE}}}
+\seealso{\code{\link[ArrayExpress]{ArrayExpress}},
+  \code{\link[ArrayExpress]{queryAE}},
+  \code{\link[ArrayExpress]{getAE}}} 
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

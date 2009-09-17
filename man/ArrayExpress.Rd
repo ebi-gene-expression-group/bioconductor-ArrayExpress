@@ -4,7 +4,7 @@
 \title{ R objects from ArrayExpress database }
 \description{
   \code{ArrayExpress} produces an
-  \code{\link[affy:class.AffyBatch]{AffyBatch}}, an
+  \code{\link[affy:AffyBatch-class]{AffyBatch}}, an
   \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}}
   or a \code{\link[Biobase:class.NChannelSet]{NChannelSet}} from a raw
   dataset from the ArrayExpress database.
@@ -35,7 +35,7 @@ ArrayExpress(input, path = getwd(), save = FALSE, rawcol = NULL)
   }
 \value{
   The output is an object of class
-  \code{\link[Biobase:class.AffyBatch]{AffyBatch}} or 
+  \code{\link[affy:AffyBatch-class]{AffyBatch}} or 
   \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}} or 
   \code{\link[Biobase:class.NChannelSet]{NChannelSet}} with the raw expression
   values in the assayData of the object, the information
@@ -45,7 +45,12 @@ ArrayExpress(input, path = getwd(), save = FALSE, rawcol = NULL)
   If several array designs are used in the data set, the output is a
   list with an object for each array design.
 }
-\seealso{\code{\link{queryAE}}, \code{\link{getAE}}, \code{\link{magetab2bioc}}, \code{\link{getcolproc}}, \code{\link{procset}}}
+\seealso{
+  \code{\link[ArrayExpress]{queryAE}},
+  \code{\link[ArrayExpress]{getAE}},
+  \code{\link[ArrayExpress]{magetab2bioc}},
+  \code{\link[ArrayExpress]{getcolproc}},
+  \code{\link[ArrayExpress]{procset}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

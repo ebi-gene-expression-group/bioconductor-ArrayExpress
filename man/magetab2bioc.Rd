@@ -11,10 +11,11 @@ magetab2bioc(files, rawcol = NULL, save = TRUE)
 }
 \arguments{
 
-  \item{files}{ A list as given from \code{\link{getAE}}
+  \item{files}{ A list as given from \code{\link[ArrayExpress]{getAE}}
     function. Containing the following elements:
    \describe{
-   \item{rawfiles}{all the expression files to use to create the object. The content of the raw.zip MAGE-TAB file.}
+   \item{rawfiles}{all the expression files to use to create the
+    object. The content of the raw.zip MAGE-TAB file.} 
     \item{sdrf}{the name of the sdrf file from MAGE-TAB.}
   \item{idf}{the name of the idf file from MAGE-TAB.}
     \item{adf}{the name of the adf file from MAGE-TAB.}
@@ -30,13 +31,14 @@ magetab2bioc(files, rawcol = NULL, save = TRUE)
     used. These column names must correspond to existing column names of
     the expression files.}
 
-   \item{save}{ if TRUE, the files used to create the object will not be deleted from path after executing the function.}
+   \item{save}{ if TRUE, the files used to create the object will not be
+   deleted from path after executing the function.} 
  
 }
 
 \value{
   An object of class
-  \code{\link[Biobase:class.AffyBatch]{AffyBatch}},
+  \code{\link[affy:AffyBatch-class]{AffyBatch}},
   \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}} or 
   \code{\link[Biobase:class.NChannelSet]{NChannelSet}} with the raw expression
   values in the 'assayData' of the object, the information
@@ -46,7 +48,9 @@ magetab2bioc(files, rawcol = NULL, save = TRUE)
   If several array designs are used in the dataset, the output is a
   list with an object for each array design.  
 }
-\seealso{\code{\link{ArrayExpress}}, \code{\link{queryAE}}, \code{\link{getAE}}}
+\seealso{\code{\link[ArrayExpress]{ArrayExpress}},
+  \code{\link[ArrayExpress]{queryAE}},
+  \code{\link[ArrayExpress]{getAE}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

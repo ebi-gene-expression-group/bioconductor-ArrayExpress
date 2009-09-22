@@ -11,7 +11,8 @@ getAE(input, path = getwd(), type = "full", extract = TRUE)
 }
 \arguments{
   \item{input}{ is an ArrayExpress identifier. }
-  \item{path}{ is the name of the directory in which the files downloaded on the ArrayExpress repository will be extracted.}
+  \item{path}{ is the name of the directory in which the files
+    downloaded on the ArrayExpress repository will be extracted.} 
   \item{type}{ can be 'raw' to download and extract only the raw data,
     'processed' to download and extract only the processed data or
     'full' to have both raw and processed data.}
@@ -21,10 +22,10 @@ getAE(input, path = getwd(), type = "full", extract = TRUE)
   \code{ A list with the names of the files that
     have been downloaded and extracted. }
 }
-\seealso{\code{\link[AffayExpress]{ArrayExpress}},
-  \code{\link[AffayExpress]{magetab2bioc}},
-  \code{\link[AffayExpress]{getcolproc}},
-  \code{\link[AffayExpress]{procset}}}
+\seealso{\code{\link[AffyExpress]{ArrayExpress}},
+  \code{\link[AffyExpress]{magetab2bioc}},
+  \code{\link[AffyExpress]{getcolproc}},
+  \code{\link[AffyExpress]{procset}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

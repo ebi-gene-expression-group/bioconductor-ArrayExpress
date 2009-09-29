@@ -22,10 +22,10 @@ getAE(input, path = getwd(), type = "full", extract = TRUE)
   \code{ A list with the names of the files that
     have been downloaded and extracted. }
 }
-\seealso{\code{\link[AffyExpress]{ArrayExpress}},
-  \code{\link[AffyExpress]{magetab2bioc}},
-  \code{\link[AffyExpress]{getcolproc}},
-  \code{\link[AffyExpress]{procset}}}
+\seealso{\code{\link[ArrayExpress]{ArrayExpress}},
+  \code{\link[ArrayExpress]{magetab2bioc}},
+  \code{\link[ArrayyExpress]{getcolproc}},
+  \code{\link[ArrayyExpress]{procset}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

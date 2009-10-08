@@ -24,8 +24,8 @@ getAE(input, path = getwd(), type = "full", extract = TRUE)
 }
 \seealso{\code{\link[ArrayExpress]{ArrayExpress}},
   \code{\link[ArrayExpress]{magetab2bioc}},
-  \code{\link[ArrayyExpress]{getcolproc}},
-  \code{\link[ArrayyExpress]{procset}}}
+  \code{\link[ArrayExpress]{getcolproc}},
+  \code{\link[ArrayExpress]{procset}}}
 \author{
   Audrey Kauffmann 
   Maintainer: <audrey@ebi.ac.uk>  

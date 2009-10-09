@@ -194,7 +194,7 @@ AEsetnorm = rma(AEset)
 
 To check the normalisation efficiency, we can run a quality assessment. For details on the arguments used, please read the arrayQualityMetrics vignette.
 <<qanorm, results=hide>>=
-fac = grep("FactorValue",colnames(pData(AEset)), value=T)
+fac = grep("Factor.Value",colnames(pData(AEset)), value=T)
 library("arrayQualityMetrics")
 qanorm = arrayQualityMetrics(AEsetnorm, 
   outdir = "QAnorm", 

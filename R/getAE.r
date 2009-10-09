@@ -6,19 +6,27 @@ getAE = function (input, path = getwd(), type = "full", extract = TRUE)
   ## Building the link with the input name
   url = "http://www.ebi.ac.uk/microarray-as/ae/files"
   exp = paste(url,input,input,sep="/")
-
+  indexf = file.path(path,paste("index",input,".html",sep=""))
+  d = try(download.file(paste(url, input, "index.html",sep="/"), indexf , mode="wb"))
+  ind = read.table(indexf, sep="\n", colClasses="character")
+  
   if(type == "full" || type == "raw")
     {
+      nraw = length(gregexpr("raw.[0-9]{1,}.zip",ind[1,], fixed=FALSE)[[1]])/2
+
       ##RAW DATA######################
       ## Saving temporarily the raw data
-      raw = paste(exp,".raw.zip",sep="")
-      rawdata = file.path(path,paste(input,".raw.zip",sep=""))
       options(HTTPUserAgent = paste(oldopt, "ArrayExpress", sessionInfo("ArrayExpress")$otherPkgs[[1]]$Version))
-      dnld = try(download.file(raw, rawdata, mode="wb"))
-      
+
+      rawdata = lapply(1:nraw, function(i) file.path(path,paste(input,".raw.",i,".zip",sep="")))
+
+      dnld =  try(sapply(1:nraw, function(i) download.file(paste(exp,".raw.",i,".zip",sep=""), rawdata[[i]], mode="wb")))
+
+      rawdata = unlist(rawdata)
+       
       ## Download raw.zip checking
-      if(inherits(dnld, 'try-error') || file.info(rawdata)$size == 0) {
-        warning(paste(raw, " does not exist or is empty. \n"),sep="")
+      if(inherits(dnld, 'try-error') || file.info(rawdata[[1]])$size == 0) {
+        warning(paste(rawdata, " does not exist or is empty. \n"),sep="")
         rawdata = NULL
         rawfiles = NULL
 	    rawcol = NULL
@@ -32,20 +40,25 @@ getAE = function (input, path = getwd(), type = "full", extract = TRUE)
           rawfiles = rawdata
 	  rawcol = NULL
 	  }
-        rawdata = basename(rawdata) }
+        rawdata = basename(rawdata)
+	}
     }
   
   if(type == "full" || type == "processed")
     {
       ##PROCESSED DATA######################
       ## Saving temporarily the processed data
-      proc = paste(exp,".processed.zip",sep="")
-      procdata = file.path(path,paste(input,".processed.zip",sep=""))
-      dnldp = try(download.file(proc, procdata, mode="wb"))
+      npro = length(gregexpr("processed.[0-9]{1,}.zip",ind[1,], fixed=FALSE)[[1]])/2
+
+      procdata = lapply(1:npro, function(i) file.path(path,paste(input,".processed.",i,".zip",sep="")))
+
+      dnldp = try(sapply(1:npro, function(i) download.file(paste(exp,".processed.",i,".zip",sep=""), procdata[[i]], mode="wb")))
+
+      procdata = unlist(procdata)
 
       ## Download processed.zip checking
-      if(inherits(dnldp, 'try-error') || file.info(procdata)$size == 0) {
-        warning(paste(proc, " does not exist or is empty. \n"),sep="")
+      if(inherits(dnldp, 'try-error') || file.info(procdata[[1]])$size == 0) {
+        warning(paste(procdata, " does not exist or is empty. \n"),sep="")
         procdata = NULL
         procfile = NULL
       } else  {

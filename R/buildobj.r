@@ -131,7 +131,9 @@ AB = function(i, files, path, ph, adr, adf, idf)
 ## Create NCS or ES for non Affymetrix data sets
 nonAB = function(i, files, path, ph, rawcol, adr, adf, idf)
   {
-    pht = pData(ph)
+    pht = try(pData(ph))
+    if(!inherits(pht, "try-error"))
+    {
     if(!"Array.Data.Matrix.File" %in% colnames(pht))
       warning("Cannot find array data file names in the sdrf file. The object may not be built.")
 
@@ -141,6 +143,7 @@ nonAB = function(i, files, path, ph, rawcol, adr, adf, idf)
      
     files = files[files != ""]
     pht = ph[pht$Array.Design.REF == adr[i],]
+}
   
     url2 = "http://tab2mage.svn.sourceforge.net/viewvc/*checkout*/tab2mage/trunk/Tab2MAGE/lib/ArrayExpress/Datafile/QT_list.txt" 
         

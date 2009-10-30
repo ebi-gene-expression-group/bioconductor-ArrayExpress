@@ -71,10 +71,20 @@ queryAE = function(keywords = NULL, species = NULL)
     
     experimentdesign = getelt(x, node = "experimentdesign",
       element = "experimentdesign.children.text.value")   
-  
+    
+    ID = do.call("paste",c(as.list(ID),sep=" | "))
+    Raw = do.call("paste",c(as.list(Raw),sep=" | "))
+    Processed = do.call("paste",c(as.list(Processed),sep=" | "))
+    date = do.call("paste",c(as.list(date),sep=" | "))
+    pmid = do.call("paste",c(as.list(pmid),sep=" | "))
+    spec = do.call("paste",c(as.list(spec),sep=" | "))
+    experimentdesign = do.call("paste",c(as.list(experimentdesign),sep=" | "))
+
     experimentalfactor = geteltmulti(x, node = "experimentalfactor",
       element1 = "children.name.children.text.value",
       element2 = "children.value.children.text.value")
+
+    experimentalfactor = do.call("paste",c(as.list(experimentalfactor),sep=" || "))
 
     xmlparsed = data.frame(ID = ID, Raw = Raw, Processed = Processed, ReleaseDate = date, PubmedID = pmid, Species = spec, ExperimentDesign = experimentdesign, ExperimentFactors = experimentalfactor)
     return(xmlparsed)

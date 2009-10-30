@@ -30,7 +30,11 @@ magetab2bioc = function(files, rawcol = NULL, save = TRUE)
   ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$"))
 
   if(inherits(ph, 'try-error') && length(grep(".cel",files, ignore.case = TRUE)) == 0)
-    stop(sprintf("No sdrf file available. The object cannot be built."))
+  {
+    warning(sprintf("No sdrf file available. The object may not be built."))
+    adr = "Empty"
+    raweset = try(nonAB(i = 1, files, path, ph, rawcol, adr, adf, idf))
+  }
   if(inherits(ph, 'try-error') && length(grep(".cel",files, ignore.case = TRUE)) != 0)
     {
       warning(sprintf("No sdrf file available. The object may not be built."))

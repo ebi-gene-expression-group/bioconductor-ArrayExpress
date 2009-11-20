@@ -134,18 +134,20 @@ nonAB = function(i, files, path, ph, rawcol, adr, adf, idf)
     pht = try(pData(ph))
     if(!inherits(pht, "try-error"))
     {
-    if(!"Array.Data.Matrix.File" %in% colnames(pht))
+    if(!"Array.Data.Matrix.File" %in% colnames(pht) &&!"Array.Data.File" %in% colnames(pht)  )
       warning("Cannot find array data file names in the sdrf file. The object may not be built.")
 
-
-    if(length(pht[pht$Array.Design.REF == adr[i],"Array.Data.Matrix.File"] != "") == 0)
-      warning("Cannot find array data file names in the sdrf file. The object may not be built.") else files = pht[pht$Array.Design.REF == adr[i],"Array.Data.Matrix.File"]
-     
+    if(length(pht[pht$Array.Design.REF == adr[i],"Array.Matrix.Data.File"] != "") == 0 && length(pht[pht$Array.Design.REF == adr[i],"Array.Data.File"] != "") == 0 )
+      warning("Cannot find array data file names in the sdrf file. The object may not be built.") else {
+if("Array.Data.Matrix.File" %in% colnames(pht))
+files = pht[pht$Array.Design.REF == adr[i],"Array.Data.Matrix.File"]
+if("Array.Data.File" %in% colnames(pht))
+files = pht[pht$Array.Design.REF == adr[i],"Array.Data.File"]
+}    
     files = files[files != ""]
     pht = ph[pht$Array.Design.REF == adr[i],]
 }
-  
-    url2 = "http://tab2mage.svn.sourceforge.net/viewvc/*checkout*/tab2mage/trunk/Tab2MAGE/lib/ArrayExpress/Datafile/QT_list.txt" 
+    url2 = "http://tab2mage.svn.sourceforge.net/viewvc/tab2mage/trunk/Tab2MAGE/lib/ArrayExpress/Datafile/QT_list.txt" 
         
     qt = try(read.table(url2, sep = "\t", quote = "",
       check.names = FALSE, fill = TRUE,

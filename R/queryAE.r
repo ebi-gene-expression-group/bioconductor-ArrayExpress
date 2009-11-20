@@ -4,10 +4,19 @@ getelt = function(x, node, element)
       if(length(grep(node,names(xmlRoot(x)[[i]])))  != 0)
         unlist(xmlElementsByTagName(xmlRoot(x)[[i]], node))[names(unlist(xmlElementsByTagName(xmlRoot(x)[[i]], node)))== element]  else "NA" })
 
-    elt2 = lapply(elt, function(i) if(length(i) == 0) "NA" else i)
+    sizeelt = sapply(1:length(xmlRoot(x)), function(i){
+      if(length(grep(node,names(xmlRoot(x)[[i]])))  != 0)
+        length(unlist(xmlElementsByTagName(xmlRoot(x)[[i]], node))[names(unlist(xmlElementsByTagName(xmlRoot(x)[[i]], node)))== element])  else "NA" })
 
-    elt3 = unlist(lapply(elt2, function(i) do.call("paste",c(as.list(i),sep=" | "))))
-    
+	if(inherits(elt, "list") || (inherits(elt, "character") && max(sizeelt[sizeelt!="NA"]) == 1))
+	{
+	    elt2 = lapply(elt, function(i) if(length(i) == 0) "NA" else i)
+
+	    elt3 = unlist(lapply(elt2, function(i) do.call("paste",c(as.list(i),sep=" | "))))
+    	} 
+	if(inherits(elt, "matrix") && max(sizeelt) > 1)
+	   elt3 = do.call("paste",c(as.list(elt),sep=" | "))
+
     names(elt3) = NULL
     return(elt3)
   }
@@ -25,11 +34,12 @@ elt = sapply(1:length(xmlRoot(x)), function(i){
         paste(e1, e2, sep="=")
        })} else "NA" })
 
-elt2 = lapply(elt, function(i) if(length(i) == 0) "NA" else i)
-
-elt3 = lapply(elt2, function(i) unlist(i))
-
-elt4 = unlist(lapply(elt3, function(i) do.call("paste",c(as.list(i),sep=" | "))))
+	if(inherits(elt, "list"))
+	{
+		elt2 = lapply(elt, function(i) if(length(i) == 0) "NA" else i)
+		elt3 = lapply(elt2, function(i) unlist(i))
+		elt4 = unlist(lapply(elt3, function(i) do.call("paste",c(as.list(i),sep=" | "))))
+	} else elt4 = do.call("paste",c(as.list(do.call("paste",c(as.list(elt),sep=" | ")), sep="||")))
 
    names(elt4) = NULL
    return(elt4)
@@ -68,23 +78,13 @@ queryAE = function(keywords = NULL, species = NULL)
 
     spec = getelt(x, node = "species",
       element = "species.children.text.value")
-    
+
     experimentdesign = getelt(x, node = "experimentdesign",
       element = "experimentdesign.children.text.value")   
-    
-    ID = do.call("paste",c(as.list(ID),sep=" | "))
-    Raw = do.call("paste",c(as.list(Raw),sep=" | "))
-    Processed = do.call("paste",c(as.list(Processed),sep=" | "))
-    date = do.call("paste",c(as.list(date),sep=" | "))
-    pmid = do.call("paste",c(as.list(pmid),sep=" | "))
-    spec = do.call("paste",c(as.list(spec),sep=" | "))
-    experimentdesign = do.call("paste",c(as.list(experimentdesign),sep=" | "))
 
     experimentalfactor = geteltmulti(x, node = "experimentalfactor",
       element1 = "children.name.children.text.value",
       element2 = "children.value.children.text.value")
-
-    experimentalfactor = do.call("paste",c(as.list(experimentalfactor),sep=" || "))
 
     xmlparsed = data.frame(ID = ID, Raw = Raw, Processed = Processed, ReleaseDate = date, PubmedID = pmid, Species = spec, ExperimentDesign = experimentdesign, ExperimentFactors = experimentalfactor)
     return(xmlparsed)

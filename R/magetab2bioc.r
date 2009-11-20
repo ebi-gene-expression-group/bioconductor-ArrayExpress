@@ -26,8 +26,7 @@ magetab2bioc = function(files, rawcol = NULL, save = TRUE)
     files = rawfiles
 
   basefilenames = basename(files)
-
-  ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$"))
+  ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$", quote="\""))
 
   if(inherits(ph, 'try-error') && length(grep(".cel",files, ignore.case = TRUE)) == 0)
   {
@@ -78,5 +77,16 @@ magetab2bioc = function(files, rawcol = NULL, save = TRUE)
       if(length(adr) > 1)
         raweset = try(lapply(seq_len(length(adr)), function(i) try(nonAB(i, files, path, ph, rawcol, adr, adf, idf))))
     }
+  ## Mixture
+raweset = list()
+  if(length(grep(".cel",files, ignore.case = TRUE)) != 0 && length(grep(".cel",files, ignore.case = TRUE)) != length(files))
+    {
+      for(i in seq_len(length(adr)))
+      {
+	raweset[[i]] = if(length(grep(".cel", pData(ph)[ph$Array.Design.REF == adr[i],"Array.Data.File"], ignore.case = TRUE)) == 0) try(nonAB(i = 1, files, path, ph, rawcol, adr[i], adf[i], idf)) else try(AB(i = 1, files, path, ph, adr[i], adf[i], idf))
+	}
+print(i)
+    }
+
   return(raweset)
 }#end of magetab2bioc

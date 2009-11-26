@@ -181,7 +181,7 @@ proset = procset(mexp1422, cn[2])
 \section{Example of a standard microarray analysis using data from ArrayExpress}
 In this section, we are briefly describing an analysis from the data import to the identification of differentially expressed genes, of data publicly available on ArrayExpress.
 
-The first step consists of importing a dataset from ArrayExpress. We chose E-MEXP-1416. This dataset studies the transcription profiling of melanized domamine neurons isolated from male and female patients with Parkinson disease to investigate gender differences.
+The first step consists of importing a dataset from ArrayExpress. We chose E-MEXP-1416. This dataset studies the transcription profiling of melanized dopamine neurons isolated from male and female patients with Parkinson disease to investigate gender differences.
 <<import, results=hide>>=
 AEset = ArrayExpress("E-MEXP-1416")
 @ 

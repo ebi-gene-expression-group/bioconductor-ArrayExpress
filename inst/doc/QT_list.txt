@@ -127,8 +127,8 @@ Area - 5m2_Cy3	integer	linear_scale	SpecializedQuantitationType			Cy3	Area of th
 Area - 5m2_Cy5	integer	linear_scale	SpecializedQuantitationType			Cy5	Area of the spot, background and/or reference region.
 Area - mm2_Cy3	integer	linear_scale	SpecializedQuantitationType			Cy3	Area of the spot, background and/or reference region.
 Area - mm2_Cy5	integer	linear_scale	SpecializedQuantitationType			Cy5	Area of the spot, background and/or reference region.
-Area - %Gï¿½%@m2_Cy3		linear_scale	SpecializedQuantitationType			Cy3	Area of the spot, background and/or reference region.
-Area - %Gï¿½%@m2_Cy5		linear_scale	SpecializedQuantitationType			Cy5	Area of the spot, background and/or reference region.
+Area - µm2_Cy3		linear_scale	SpecializedQuantitationType			Cy3	Area of the spot, background and/or reference region.
+Area - µm2_Cy5		linear_scale	SpecializedQuantitationType			Cy5	Area of the spot, background and/or reference region.
 Bkgd_Cy3	float	linear_scale	MeasuredSignal	1		Cy3	Background density or volume; background volume value is adjusted to the size of spot, where applicable.
 Bkgd_Cy5	float	linear_scale	MeasuredSignal	1		Cy5	Background density or volume; background volume value is adjusted to the size of spot, where applicable.
 Flag_Cy3	boolean	linear_scale	PresentAbsent			Cy3	Select this measure to manually flag data in the data table. The value of this measure can be 0 or 1.
@@ -137,12 +137,12 @@ MAD - RFU / 5m2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	Median 
 MAD - RFU / 5m2_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	Median of absolute deviation - median of the absolute values of deviations from the median density (i.e., the absolute values of pixel densities  median density); it is a measure of the variation around the median density value of the spot.
 MAD - RFU / mm2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	Median of absolute deviation - median of the absolute values of deviations from the median density (i.e., the absolute values of pixel densities  median density); it is a measure of the variation around the median density value of the spot.
 MAD - RFU / mm2_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	Median of absolute deviation - median of the absolute values of deviations from the median density (i.e., the absolute values of pixel densities  median density); it is a measure of the variation around the median density value of the spot.
-MAD - RFU / %Gï¿½%@m2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	Median of absolute deviation - median of the absolute values of deviations from the median density (i.e., the absolute values of pixel densities  median density); it is a measure of the variation around the median density value of the spot.
-MAD - RFU / %Gï¿½%@m2_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	Median of absolute deviation - median of the absolute values of deviations from the median density (i.e., the absolute values of pixel densities  median density); it is a measure of the variation around the median density value of the spot.
+MAD - RFU / µm2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	Median of absolute deviation - median of the absolute values of deviations from the median density (i.e., the absolute values of pixel densities  median density); it is a measure of the variation around the median density value of the spot.
+MAD - RFU / µm2_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	Median of absolute deviation - median of the absolute values of deviations from the median density (i.e., the absolute values of pixel densities  median density); it is a measure of the variation around the median density value of the spot.
 Median Dens - Levels_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	Median Density value of the spot Levels. ['Gray levels' (Levels) are the raw pixel intensity values upon which all other density/intensity scales are based.]
 Median Dens - Levels_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	Median Density value of the spot Levels. ['Gray levels' (Levels) are the raw pixel intensity values upon which all other density/intensity scales are based.]
-Median Dens - RFU / %Gï¿½%@m2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	
-Median Dens - RFU / %Gï¿½%@m2_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	
+Median Dens - RFU / µm2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	
+Median Dens - RFU / µm2_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	
 S/N_Cy3	float	linear_scale	Ratio	1		Cy3	Signal-to-noise ratio - spot density minus background density, divided by the SD of the background density.
 S/N_Cy5	float	linear_scale	Ratio	1		Cy5	Signal-to-noise ratio - spot density minus background density, divided by the SD of the background density.
 SD - Levels_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	Standard deviation of the pixel Levels values.
@@ -151,8 +151,8 @@ SD - RFU / 5m2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	Standard
 SD - RFU / 5m2_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	Standard deviation of the pixel density values.
 SD - RFU / mm2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	Standard deviation of the pixel density values.
 SD - RFU / mm2_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	Standard deviation of the pixel density values.
-SD - RFU / %Gï¿½%@m2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	Standard deviation of the pixel density values.
-SD - RFU / %Gï¿½%@m2_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	Standard deviation of the pixel density values.
+SD - RFU / µm2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	Standard deviation of the pixel density values.
+SD - RFU / µm2_Cy5	float	linear_scale	SpecializedQuantitationType			Cy5	Standard deviation of the pixel density values.
 SPOTLABEL							
 Spot labels	integer	linear_scale	SpecializedQuantitationType				
 VOL - Levels x mm2_Cy3	float	linear_scale	SpecializedQuantitationType			Cy3	
@@ -621,9 +621,9 @@ Rgn R2 (635/532)	float	linear_scale	SpecializedQuantitationType				The coefficie
 Rgn Ratio	float	linear_scale	SpecializedQuantitationType				The regression ratio of every pixel in a 2-feature-diameter circle around the center of the feature.
 Rgn Ratio (532/635)	float	linear_scale	SpecializedQuantitationType				The regression ratio of every pixel in a 2-feature-diameter circle around the center of the feature.
 Rgn Ratio (635/532)	float	linear_scale	SpecializedQuantitationType				The regression ratio of every pixel in a 2-feature-diameter circle around the center of the feature.
-Rgn R%Gï¿½%@	float	linear_scale	SpecializedQuantitationType				
-Rgn R%Gï¿½%@ (635/532)	float	linear_scale	SpecializedQuantitationType				
-Rgn R%Gï¿½%@ (532/635)	float	linear_scale	SpecializedQuantitationType				
+Rgn R²	float	linear_scale	SpecializedQuantitationType				
+Rgn R² (635/532)	float	linear_scale	SpecializedQuantitationType				
+Rgn R² (532/635)	float	linear_scale	SpecializedQuantitationType				
 SNR 532	float	linear_scale	SpecializedQuantitationType	1		Cy3	The signal-to-noise ratio at 532 nm, defined by (F532 Mean - B532 Mean) / (B532 SD)
 SNR 635	float	linear_scale	SpecializedQuantitationType	1		Cy5	The signal-to-noise ratio at 635 nm, defined by (F635 Mean - B635 Mean) / (B635 SD)
 Sum of Means	integer	linear_scale	SpecializedQuantitationType				The sum of the arithmetic mean intensities for each wavelength, with the median background subtracted.
@@ -927,7 +927,7 @@ Cy3 Ratio of Means
 Cy3 Ratio of Medians							
 Cy3 Ratios SD							
 Cy3 Rgn Ratio							
-Cy3 Rgn R%Gï¿½%@							
+Cy3 Rgn R²							
 Cy3 SD	float	linear_scale	Error		Cy3 Median	Cy3	Standard deviation of the raw Cy3 foreground pixel intensity.
 Cy3 SignalNoiseRatio	float	linear_scale	Ratio			Cy3	The ratio of spot Cy3 intensity to the standard deviation of the local Cy3 background of all spots in the microarray. Spots with a low Signal/Noise Ratio can be quickly identified for later reviews.
 Cy5 % > B + 1 SD	float	linear_scale	SpecializedQuantitationType			Cy5	The percentage of feature pixels with intensities more than one standard deviation above the background pixel intensity, in the Cy5 channel.
@@ -957,7 +957,7 @@ Cy5 Ratio of Means
 Cy5 Ratio of Medians							
 Cy5 Ratios SD							
 Cy5 Rgn Ratio							
-Cy5 Rgn R%Gï¿½%@							
+Cy5 Rgn R²							
 Cy5 SD	float	linear_scale	Error		Cy5 Median	Cy5	Standard deviation of the raw Cy5 foreground pixel intensity.
 Cy5 SignalNoiseRatio	float	linear_scale	Ratio			Cy5	The ratio of spot Cy5 intensity to the standard deviation of the local Cy5 background of all spots in the microarray. Spots with a low Signal/Noise Ratio can be quickly identified for later reviews.
 Dia.	integer	linear_scale	SpecializedQuantitationType				The diameter in um of the feature-indicator.
@@ -1003,7 +1003,7 @@ Rgn R2	float	linear_scale	SpecializedQuantitationType
 Rgn R2 (633/543)	float	linear_scale	SpecializedQuantitationType				
 Rgn Ratio	float	linear_scale	SpecializedQuantitationType				
 Rgn Ratio (633/543)	float	linear_scale	SpecializedQuantitationType				
-Rgn R%Gï¿½%@ (633/543)	float	linear_scale	SpecializedQuantitationType				
+Rgn R² (633/543)	float	linear_scale	SpecializedQuantitationType				
 Sum of Means	float	linear_scale	SpecializedQuantitationType				The sum of the mean intensities for each wavelength.
 Sum of Medians	float	linear_scale	SpecializedQuantitationType				The sum of the median intensities for each wavelength.
 X	integer	linear_scale	SpecializedQuantitationType				X coordinate of spot center.

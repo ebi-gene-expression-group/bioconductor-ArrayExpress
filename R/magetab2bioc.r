@@ -77,10 +77,22 @@ magetab2bioc = function(files, rawcol = NULL, save = TRUE)
       if(length(adr) > 1)
         raweset = try(lapply(seq_len(length(adr)), function(i) try(nonAB(i, files, path, ph, rawcol, adr, adf, idf))))
     }
+<<<<<<< .mine
   ## Mixture
-raweset = list()
   if(length(grep(".cel",files, ignore.case = TRUE)) != 0 && length(grep(".cel",files, ignore.case = TRUE)) != length(files))
     {
+	raweset = list()
+      for(i in seq_len(length(adr)))
+      {
+	raweset[[i]] = if(length(grep(".cel", pData(ph)[ph$Array.Design.REF == adr[i],"Array.Data.File"], ignore.case = TRUE)) == 0) try(nonAB(i = 1, files, path, ph, rawcol, adr[i], adf[i], idf)) else try(AB(i = 1, files, path, ph, adr[i], adf[i], idf))
+	}
+print(i)
+    }
+
+  ## Mixture
+  if(length(grep(".cel",files, ignore.case = TRUE)) != 0 && length(grep(".cel",files, ignore.case = TRUE)) != length(files))
+    {
+    raweset = list()
       for(i in seq_len(length(adr)))
       {
 	raweset[[i]] = if(length(grep(".cel", pData(ph)[ph$Array.Design.REF == adr[i],"Array.Data.File"], ignore.case = TRUE)) == 0) try(nonAB(i = 1, files, path, ph, rawcol, adr[i], adf[i], idf)) else try(AB(i = 1, files, path, ph, adr[i], adf[i], idf))

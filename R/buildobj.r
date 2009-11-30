@@ -322,7 +322,10 @@ creating_experiment = function(idf, eset, path)
 
 addADF = function(adf, eset, path)
   {
-    featureData(eset) = try(read.AnnotatedDataFrame(adf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$"))
+    adffile = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t"))
+    st = grep("Reporter Name|Composite Element Name|Block Colum|Block Row|Column|Row", adffile[,1])
+    start = if(length(st) == 0 || min(st) == 1) 0 else (min(st)-2)
+    featureData(eset) = try(read.AnnotatedDataFrame(adf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$", skip=start))
     return(eset)
   }
 

@@ -7,11 +7,11 @@
   specific directory.
 }
 \usage{
-extract.zip(file, extract_path = dirname(file))
+extract.zip(file, extractpath = dirname(file))
 }
 \arguments{
   \item{file}{ A file name. }
-  \item{extract_path}{ A path to define where the files are to be extracted. }
+  \item{extractpath}{ A path to define where the files are to be extracted. }
 }
 \value{
   \code{ Success is indicated by returning the directory in which the

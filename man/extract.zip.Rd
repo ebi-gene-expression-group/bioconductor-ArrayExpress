@@ -7,7 +7,7 @@
   specific directory.
 }
 \usage{
-extract.zip(file, extractpath = dirname(file))
+extract.zip(file, extractpath = dirname(file)[1])
 }
 \arguments{
   \item{file}{ A file name. }

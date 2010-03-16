@@ -122,7 +122,7 @@ AB = function(i, files, path, ph, adr, adf, idf)
     if(!inherits(rawesetex, "try-error"))
       raweset = rawesetex else warning("Cannot attach experimentData")
   
-    rawesetex = try(addADF(adf = adf[i], eset = raweset, path = path))
+    rawesetex = try(addADF(adf = adf[i], eset = raweset, path = path, files=files))
     if(!inherits(rawesetex, "try-error"))
       raweset = rawesetex else warning("Cannot attach featureData")
     return(raweset)
@@ -269,7 +269,7 @@ files = pht[pht$Array.Design.REF == adr[i],"Array.Data.File"]
     if(!inherits(rawesetex, "try-error"))
       raweset = rawesetex else warning("Cannot attach experimentData")
   
-    rawesetex = try(addADF(adf = adf[i], eset = raweset, path = path))
+    rawesetex = try(addADF(adf = adf[i], eset = raweset, path = path, files=files))
     if(!inherits(rawesetex, "try-error"))
       raweset = rawesetex else warning("Cannot attach featureData")
 
@@ -320,12 +320,33 @@ creating_experiment = function(idf, eset, path)
     return(eset)	  
   }
 
-addADF = function(adf, eset, path)
+addADF = function(adf, eset, path, files)
   {
     adffile = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t"))
+
+    fn = try(read.table(file.path(path, files[1]), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", header=TRUE))
+
     st = grep("Reporter Name|Composite Element Name|Block Colum|Block Row|Column|Row", adffile[,1])
     start = if(length(st) == 0 || min(st) == 1) 0 else (min(st)-2)
-    featureData(eset) = try(read.AnnotatedDataFrame(adf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$", skip=start))
+    adff = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", skip = start, header=TRUE))
+
+    mc1 = grep("metacolumn", colnames(adff), ignore.case=TRUE)
+    mc2 = grep("metacolumn", colnames(fn), ignore.case=TRUE)
+    mr1 = grep("metarow", colnames(adff), ignore.case=TRUE)
+    mr2 = grep("metarow", colnames(fn), ignore.case=TRUE)
+    c1 = grep("^column", colnames(adff), ignore.case=TRUE)
+    c2 = grep("^column", colnames(fn), ignore.case=TRUE)
+    r1 = grep("^row", colnames(adff), ignore.case=TRUE)
+    r2 = grep("^row", colnames(fn), ignore.case=TRUE)
+    rownames(adff) = paste(adff[,mc1],adff[,mr1],adff[,c1],adff[,r1],sep=",")
+    rownames(fn) = paste(fn[,mc2],fn[,mr2],fn[,c2],fn[,r2],sep=",")
+    adff2 = adff[rownames(fn),]
+
+     ri1 = grep("reporter.identifier", colnames(adff), ignore.case=TRUE)
+     ri2 = grep("reporter.identifier", colnames(fn), ignore.case=TRUE)
+     rownames(adff2)=NULL
+
+     if(all(adff2[,ri1] == fn[,ri2])) featureData(eset) = new("AnnotatedDataFrame",adff2) else stop("Do not manage to map the reporter identifier between the annotation and the data files.\n")
     return(eset)
   }
 

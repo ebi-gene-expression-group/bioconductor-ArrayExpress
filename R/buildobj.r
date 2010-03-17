@@ -322,18 +322,18 @@ creating_experiment = function(idf, eset, path)
 
 addADF = function(adf, eset, path, files)
   {
-    adffile = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t"))
+    adffile = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", quote=""))
 
-    fn = try(read.table(file.path(path, files[1]), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", header=TRUE))
+    fn = try(read.table(file.path(path, files[1]), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", header=TRUE, quote=""))
 
     st = grep("Reporter Name|Composite Element Name|Block Colum|Block Row|Column|Row", adffile[,1])
-    start = if(length(st) == 0 || min(st) == 1) 0 else (min(st)-2)
-    adff = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", skip = start, header=TRUE))
+    start = if(length(st) == 0 || min(st) == 1) 0 else (min(st)-3)
+    adff = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", skip = start, header=TRUE, quote=""))
 
-    mc1 = grep("metacolumn", colnames(adff), ignore.case=TRUE)
-    mc2 = grep("metacolumn", colnames(fn), ignore.case=TRUE)
-    mr1 = grep("metarow", colnames(adff), ignore.case=TRUE)
-    mr2 = grep("metarow", colnames(fn), ignore.case=TRUE)
+    mc1 = grep("metacolumn|block.column", colnames(adff), ignore.case=TRUE)
+    mc2 = grep("metacolumn|block.column", colnames(fn), ignore.case=TRUE)
+    mr1 = grep("metarow|block.row", colnames(adff), ignore.case=TRUE)
+    mr2 = grep("metarow|block.row", colnames(fn), ignore.case=TRUE)
     c1 = grep("^column", colnames(adff), ignore.case=TRUE)
     c2 = grep("^column", colnames(fn), ignore.case=TRUE)
     r1 = grep("^row", colnames(adff), ignore.case=TRUE)
@@ -342,8 +342,8 @@ addADF = function(adf, eset, path, files)
     rownames(fn) = paste(fn[,mc2],fn[,mr2],fn[,c2],fn[,r2],sep=",")
     adff2 = adff[rownames(fn),]
 
-     ri1 = grep("reporter.identifier", colnames(adff), ignore.case=TRUE)
-     ri2 = grep("reporter.identifier", colnames(fn), ignore.case=TRUE)
+     ri1 = grep("reporter.identifier|reporter.name", colnames(adff), ignore.case=TRUE)
+     ri2 = grep("reporter.identifier|reporter.name", colnames(fn), ignore.case=TRUE)
      rownames(adff2)=NULL
 
      if(all(adff2[,ri1] == fn[,ri2])) featureData(eset) = new("AnnotatedDataFrame",adff2) else stop("Do not manage to map the reporter identifier between the annotation and the data files.\n")

@@ -122,7 +122,7 @@ AB = function(i, files, path, ph, adr, adf, idf)
     if(!inherits(rawesetex, "try-error"))
       raweset = rawesetex else warning("Cannot attach experimentData")
   
-    rawesetex = try(addADF(adf = adf[i], eset = raweset, path = path, files=files))
+    rawesetex = try(addADFaffy(adf = adf[i], eset = raweset, path = path, files=files))
     if(!inherits(rawesetex, "try-error"))
       raweset = rawesetex else warning("Cannot attach featureData")
     return(raweset)
@@ -322,12 +322,11 @@ creating_experiment = function(idf, eset, path)
 
 addADF = function(adf, eset, path, files)
   {
-    adffile = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", quote=""))
-
     fn = try(read.table(file.path(path, files[1]), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", header=TRUE, quote=""))
 
-    st = grep("Reporter Name|Composite Element Name|Block Colum|Block Row|Column|Row", adffile[,1])
-    start = if(length(st) == 0 || min(st) == 1) 0 else (min(st)-3)
+    st = sapply(1:50, function(j) length(grep("Reporter Name|Composite Element Name|Block Column|Block Row|Column|Row",readLines(file.path(path, adf), j))))
+
+    start = if(max(st) == 0) 0 else (min(which(st != 0))-1)
     adff = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", skip = start, header=TRUE, quote=""))
 
     mc1 = grep("metacolumn|block.column", colnames(adff), ignore.case=TRUE)
@@ -347,6 +346,31 @@ addADF = function(adf, eset, path, files)
      rownames(adff2)=NULL
 
      if(all(adff2[,ri1] == fn[,ri2])) featureData(eset) = new("AnnotatedDataFrame",adff2) else stop("Do not manage to map the reporter identifier between the annotation and the data files.\n")
+    return(eset)
+  }
+
+addADFaffy = function(adf, eset, path, files)
+  {
+    fn = try(read.table(file.path(path, files[1]), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", header=TRUE, quote=""))
+
+    st = sapply(1:50, function(j) length(grep("Composite Element Name",readLines(file.path(path, adf), j))))
+
+    start = if(max(st) == 0) 0 else (min(which(st != 0))-1)
+    adff = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", skip = start, header=TRUE, quote=""))
+    if("Composite.Element.Name" %in% colnames(adff))
+     {
+
+    deb = max(unlist(gregexpr(":",as.character(adff[1,"Composite.Element.Name"]))))
+    ids = substring(adff[,"Composite.Element.Name"],deb+1)
+
+    rownames(adff) = ids
+    adff2 = adff[featureNames(eset),]
+    if(all(rownames(adff2) == featureNames(eset)))
+       {    
+      	   rownames(adff2)=NULL
+ 	   featureData(eset) = new("AnnotatedDataFrame",adff2)
+	} 
+} else stop("Do not manage to map the reporter identifier between the annotation and the data files.\n")
     return(eset)
   }
 

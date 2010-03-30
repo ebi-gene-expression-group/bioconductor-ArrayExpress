@@ -1,0 +1,17 @@
+citEntry(entry="article",
+    title = "Importing ArrayExpress datasets into R/Bioconductor",
+    author = "Audrey Kauffmann and Tim F. Rayner and Helen Parkinson and Misha Kapushesky and Margus Lukk and Alvis Brazma and Wolfgang Huber",
+    journal = "Bioinformatics",
+    year = "2009",
+    volume  = "25",
+    number =  "16",
+    pages ="2092--4",
+    textVersion = paste("Kauffmann, A., Rayner, T.F., Parkinson, H., Kapushesky, M., Lukk, M., Brazma, A., Huber, W. (2009)",
+        "Importing ArrayExpress datasets into R/Bioconductor.",
+        "Bioinformatics, 25(16):2092-4.")
+    )
+
+citFooter("This free open-source software implements academic
+research by the authors and co-workers. If you use it,
+please support the project by citing the appropriate
+journal articles.")

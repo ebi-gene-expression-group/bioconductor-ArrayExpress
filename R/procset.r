@@ -8,17 +8,27 @@ procset = function(files, procol)
     colnames(procsel) = colnames(proctot[, procol == proctot[1,]])
     rownames(procsel) = rownames(proctot[-1,])
    
-    proceset = new("ExpressionSet",
-      exprs = procsel)
+    proceset = new("ExpressionSet", exprs = procsel)
 
     ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
-    ph = ph[which(pData(ph)$Array.Data.File !=""),]
-    sampleNames(ph) = ph$Array.Data.File
-    if(all(sampleNames(proceset) %in% ph$Array.Data.File))
+    if("Array.Data.Matrix.File" %in% colnames(pData(ph)) || "Array.Data.File" %in% colnames(pData(ph)))
+{
+    if("Array.Data.File" %in% colnames(pData(ph)))
+    {
+      ph = ph[which(pData(ph)$Array.Data.File !=""),]
+      sampleNames(ph) = ph$Array.Data.File
+      }
+    if("Array.Data.Matrix.File" %in% colnames(pData(ph)))
+    {
+       ph = ph[which(pData(ph)$Array.Data.Matrix.File !=""),]
+      sampleNames(ph) = ph$Array.Data.Matrix.File
+      }
+    if(all(sampleNames(proceset) %in% ph$Array.Data.File) || all(sampleNames(proceset) %in% ph$Array.Data.Matrix.File))
     {
 	ph = ph[sampleNames(proceset),]
 	phenoData(proceset) = ph
     } else warning("Cannot attach phenoData")
+} else warning("Cannot attach phenoData")
     procesetex = try(creating_experiment(idf = idf, eset = proceset, path = path)) 
     if(!inherits(procesetex, 'try-error'))
       proceset = procesetex else warning("Cannot attach experimentData")

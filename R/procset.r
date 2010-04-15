@@ -12,16 +12,22 @@ procset = function(files, procol)
       exprs = procsel)
 
     ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
-
-    phenoData(proceset) = ph
-
+    ph = ph[which(pData(ph)$Array.Data.File !=""),]
+    sampleNames(ph) = ph$Array.Data.File
+    if(all(sampleNames(proceset) %in% ph$Array.Data.File))
+    {
+	ph = ph[sampleNames(proceset),]
+	phenoData(proceset) = ph
+    } else warning("Cannot attach phenoData")
     procesetex = try(creating_experiment(idf = idf, eset = proceset, path = path)) 
     if(!inherits(procesetex, 'try-error'))
       proceset = procesetex else warning("Cannot attach experimentData")
     
-    procesetex = try(addADF(adf = adf, eset = proceset, path = path))
+    procesetex = try(addADFproc(adf = adf, eset = proceset, path = path, procfile=procfile))
     if(!inherits(procesetex, 'try-error'))
       proceset = procesetex else warning("Cannot attach featureData")
+    
+    if(!validObject(proceset)) warning(validObject(proceset))
     return(proceset)
   }) ## with
 }

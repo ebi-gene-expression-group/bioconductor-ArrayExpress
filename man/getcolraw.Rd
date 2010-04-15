@@ -22,6 +22,6 @@ getcolraw(path, rawfiles)
   \code{\link[ArrayExpress]{getAE}}} 
 \author{
   Audrey Kauffmann 
-  Maintainer: <audrey@ebi.ac.uk>  
+  Maintainer: <kauffmann@bergonie.org>  
 }
 \keyword{datasets}

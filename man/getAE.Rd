@@ -28,7 +28,7 @@ getAE(input, path = getwd(), type = "full", extract = TRUE)
   \code{\link[ArrayExpress]{procset}}}
 \author{
   Audrey Kauffmann 
-  Maintainer: <audrey@ebi.ac.uk>  
+  Maintainer: <kauffmann@bergonie.org>  
 }
 \examples{
 mexp1422 = getAE("E-MEXP-1422", type = "full")

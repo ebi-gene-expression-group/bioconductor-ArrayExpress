@@ -28,7 +28,7 @@ queryAE(keywords = NULL, species = NULL)
 \author{
   Audrey Kauffmann
   
-  Maintainer: <audrey@ebi.ac.uk>  
+  Maintainer: <kauffmann@bergonie.org>  
 }
 \examples{
 ## To retrieve all the identifiers of pneumonia data sets

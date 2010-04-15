@@ -53,7 +53,7 @@ ArrayExpress(input, path = getwd(), save = FALSE, rawcol = NULL)
   \code{\link[ArrayExpress]{procset}}}
 \author{
   Audrey Kauffmann 
-  Maintainer: <audrey@ebi.ac.uk>  
+  Maintainer: <kauffmann@bergonie.org>  
 }
 \examples{
 ETABM25.affybatch = ArrayExpress(input = "E-TABM-25")

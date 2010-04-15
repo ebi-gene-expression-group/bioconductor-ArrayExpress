@@ -30,7 +30,7 @@ getcolproc(files)
 \author{
   Audrey Kauffmann
   
-  Maintainer: <audrey@ebi.ac.uk>  
+  Maintainer: <kauffmann@bergonie.org>  
 }
 %\examples{
 %# An example can be found in the help of the getAE function.

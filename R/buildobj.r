@@ -122,9 +122,6 @@ AB = function(i, files, path, ph, adr, adf, idf)
     if(!inherits(rawesetex, "try-error"))
       raweset = rawesetex else warning("Cannot attach experimentData")
   
-    rawesetex = try(addADFaffy(adf = adf[i], eset = raweset, path = path, files=files))
-    if(!inherits(rawesetex, "try-error"))
-      raweset = rawesetex else warning("Cannot attach featureData")
     return(raweset)
   }#end of AffyBatch
 
@@ -343,15 +340,13 @@ addADF = function(adf, eset, path, files)
 
      ri1 = grep("reporter.identifier|reporter.name", colnames(adff), ignore.case=TRUE)
      ri2 = grep("reporter.identifier|reporter.name", colnames(fn), ignore.case=TRUE)
-     rownames(adff2)=NULL
-
      if(all(adff2[,ri1] == fn[,ri2])) featureData(eset) = new("AnnotatedDataFrame",adff2) else stop("Do not manage to map the reporter identifier between the annotation and the data files.\n")
     return(eset)
   }
 
-addADFaffy = function(adf, eset, path, files)
+addADFproc = function(adf, eset, path, procfile)
   {
-    fn = try(read.table(file.path(path, files[1]), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", header=TRUE, quote=""))
+    fn = try(read.table(file.path(path, procfile), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", header=TRUE, quote="", skip=1))
 
     st = sapply(1:50, function(j) length(grep("Composite Element Name",readLines(file.path(path, adf), j))))
 
@@ -360,17 +355,22 @@ addADFaffy = function(adf, eset, path, files)
     if("Composite.Element.Name" %in% colnames(adff))
      {
 
-    deb = max(unlist(gregexpr(":",as.character(adff[1,"Composite.Element.Name"]))))
-    ids = substring(adff[,"Composite.Element.Name"],deb+1)
-
-    rownames(adff) = ids
+    rownames(adff) = adff[,"Composite.Element.Name"]
     adff2 = adff[featureNames(eset),]
     if(all(rownames(adff2) == featureNames(eset)))
-       {    
-      	   rownames(adff2)=NULL
  	   featureData(eset) = new("AnnotatedDataFrame",adff2)
-	} 
-} else stop("Do not manage to map the reporter identifier between the annotation and the data files.\n")
+      } 
+    if("Reporter.Identifier" %in% colnames(adff) || "Reporter.Name" %in% colnames(adff))
+     {
+     if("Reporter.Identifier" %in% colnames(adff))
+        rownames(adff) = adff[,"Reporter.Identifier"]
+     if("Reporter.Name" %in% colnames(adff))
+        rownames(adff) = adff[,"Reporter.Name"]
+
+    adff2 = adff[featureNames(eset),]
+    if(all(rownames(adff2) == featureNames(eset)))
+ 	   featureData(eset) = new("AnnotatedDataFrame",adff2)
+      }
     return(eset)
   }
 

@@ -226,7 +226,7 @@ files = pht[pht$Array.Design.REF == adr[i],"Array.Data.File"]
 
         if(length(files) != 1)
           {
-            if(!all(sapply(2:length(files), function(i) readLines(files[1],1) == readLines(files[i],1))))
+            if(!all(sapply(2:length(files), function(i) readLines(file.path(path,files[1]),1) == readLines(file.path(path,files[i]),1))))
               warning(sprintf("The files do not all have the same headings whereas the array design is the same. It may cause the object not being created."))
           }
         

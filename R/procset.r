@@ -2,8 +2,17 @@ procset = function(files, procol)
 {
   stopifnot(length(procol)==1)
   with(files, {
-    
-    proctot = read.table(file.path(path,procfile),header=TRUE,sep="\t", quote="", row.names=1, stringsAsFactors=FALSE)
+
+    if(length(procfile) == 1)
+      {
+        proctot = try(read.table(file.path(path,procfile),header=TRUE,sep="\t", quote="", row.names=1, stringsAsFactors=FALSE))
+        if(inherits(proctot, 'try-error'))
+          if(length(grep("duplicate",proctot)) != 0) stop("The probe identifiers are not unique. The processed file cannot automatically be treated.") else stop("Cannot read the processed file automatically.") 
+      }
+      
+     if(length(procfile) > 1)
+       stop("The processed files contain different numbers/subsets of reporters and cannot be automatically assembled.")
+   
     procsel = matrix(as.numeric(as.matrix(proctot[-1, procol == proctot[1,]])), nrow=nrow(proctot)-1)
     colnames(procsel) = colnames(proctot[, procol == proctot[1,]])
     rownames(procsel) = rownames(proctot[-1,])

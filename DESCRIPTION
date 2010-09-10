@@ -5,6 +5,7 @@ Author: Audrey Kauffmann
 Maintainer: Audrey Kauffmann <kauffmann@bergonie.org>
 Depends: R (>= 2.9.0), Biobase (>= 2.4.0)
 Imports: XML, affy, limma
+Suggests: arrayQualityMetrics
 Description:  Access the ArrayExpress Repository at EBI and build Bioconductor data structures: ExpressionSet, AffyBatch, NChannelSet
 License: Artistic-2.0
 biocViews: Microarray, DataImport, OneChannel, TwoChannel

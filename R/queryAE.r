@@ -66,12 +66,17 @@ queryAE = function(keywords = NULL, species = NULL)
     x2 = xmlTreeParse(queryfilename, useInternalNodes = TRUE)
     ra = getNodeSet(x2,"/experiments//raw[@count]")
     Raw = sapply(ra, function(r) xmlGetAttr(r, "count"))
-    
+    Rawids = sapply(ra, function(r) xmlGetAttr(r, "name"))
+    Rawids = gsub(".raw.*.zip","",Rawids)
+    names(Raw) = Rawids
+   
     pr = getNodeSet(x2,"/experiments//fgem[@count]")
     Processed = sapply(pr, function(p) xmlGetAttr(p, "count"))
-    
-    date = getelt(x, node = "releasedate",
-      element = "releasedate.children.text.value")
+    Procids = sapply(pr, function(r) xmlGetAttr(r, "name"))
+    Procids = gsub(".processed.*.zip","",Procids)
+    names(Processed) = Procids
+
+    date = getelt(x, node = "releasedate",  element = "releasedate.children.text.value")
     
     pmid = getelt(x, node = "bibliography",
       element = "bibliography.children.accession.children.text.value")
@@ -86,6 +91,6 @@ queryAE = function(keywords = NULL, species = NULL)
       element1 = "children.name.children.text.value",
       element2 = "children.value.children.text.value")
 
-    xmlparsed = data.frame(ID = ID, Raw = Raw, Processed = Processed, ReleaseDate = date, PubmedID = pmid, Species = spec, ExperimentDesign = experimentdesign, ExperimentFactors = experimentalfactor)
+    xmlparsed = data.frame(ID = ID, Raw = Raw[ID], Processed = Processed[ID], ReleaseDate = date, PubmedID = pmid, Species = spec, ExperimentDesign = experimentdesign, ExperimentFactors = experimentalfactor)
     return(xmlparsed)
   }

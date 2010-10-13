@@ -192,17 +192,18 @@ library("affy")
 AEsetnorm = rma(AEset)
 @ 
 
-To check the normalisation efficiency, we can run a quality assessment. For details on the arguments used, please read the arrayQualityMetrics vignette.
+To check the normalisation efficiency, we can run a quality assessment. For details on the arguments used, please read the arrayQualityMetrics vignette. Please note that, at the time of its release (Oct 2010), Bioconductor 2.7 didn't include a 64-bit Windows binary version of the \Rpackage{arrayQualityMetrics} package (but this might change in the future).
 <<qanorm, results=hide>>=
 fac = grep("Factor.Value",colnames(pData(AEset)), value=T)
-library("arrayQualityMetrics")
-qanorm = arrayQualityMetrics(AEsetnorm, 
-  outdir = "QAnorm", 
-  intgroup = fac, 
-  grouprep = TRUE)
+if (suppressWarnings(require("arrayQualityMetrics", quietly=TRUE))) {
+  qanorm = arrayQualityMetrics(AEsetnorm, 
+    outdir = "QAnorm", 
+    intgroup = fac, 
+    grouprep = TRUE)
+}
 @ 
 
-Now that we have ensured that the data are well processed, we can search for differentially expressed genes using the package limma. To understand the details of each steps, please see the limma user guide.
+Now that we have ensured that the data are well processed, we can search for differentially expressed genes using the package \Rpackage{limma}. To understand the details of each steps, please see the limma user guide.
 <<limma, results=hide>>=
 library("limma")
 facs =  pData(AEset)[,fac]

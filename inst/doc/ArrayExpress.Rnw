@@ -193,15 +193,16 @@ AEsetnorm = rma(AEset)
 @ 
 
 To check the normalisation efficiency, we can run a quality assessment. For details on the arguments used, please read the arrayQualityMetrics vignette. Please note that, at the time of its release (Oct 2010), Bioconductor 2.7 didn't include a 64-bit Windows binary version of the \Rpackage{arrayQualityMetrics} package (but this might change in the future).
+<<fac>>=
+fac = grep("Factor.Value",colnames(pData(AEset)), value=T)
+@
 %Turning off evaluation for now (Oct 15, 2010) until someone has the time to
 %troubleshoot the following error on Windows:
 %  Error: processing vignette 'ArrayExpress.Rnw' failed with diagnostics:
 %   chunk 11 (label=qanorm) 
 %  Error in aqm.report.qm(p, obj[[i]], i, names(obj)[i]) : 
 %    could not find function "svg"
-%<<qanorm, results=hide>>=
 <<qanorm, eval=FALSE, results=hide>>=
-fac = grep("Factor.Value",colnames(pData(AEset)), value=T)
 if (suppressWarnings(require("arrayQualityMetrics", quietly=TRUE))) {
   qanorm = arrayQualityMetrics(AEsetnorm, 
     outdir = "QAnorm", 

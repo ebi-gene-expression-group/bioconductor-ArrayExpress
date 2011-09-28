@@ -65,16 +65,25 @@ queryAE = function(keywords = NULL, species = NULL)
     names(ID) = NULL
     x2 = xmlTreeParse(queryfilename, useInternalNodes = TRUE)
     ra = getNodeSet(x2,"/experiments//raw[@count]")
-    Raw = sapply(ra, function(r) xmlGetAttr(r, "count"))
+    ##Raw = sapply(ra, function(r) xmlGetAttr(r, "count"))
     Rawids = sapply(ra, function(r) xmlGetAttr(r, "name"))
     Rawids = gsub(".raw.*.zip","",Rawids)
-    names(Raw) = Rawids
+    ##names(Raw) = Rawids
+    Raw = rep(NA,length(ID))
+    names(Raw) = ID
+    Raw[which(ID %in% Rawids)] = 'yes'
+    Raw[which(!ID %in% Rawids)] = 'no'
+    
    
     pr = getNodeSet(x2,"/experiments//fgem[@count]")
-    Processed = sapply(pr, function(p) xmlGetAttr(p, "count"))
+    ##Processed = sapply(pr, function(p) xmlGetAttr(p, "count"))
     Procids = sapply(pr, function(r) xmlGetAttr(r, "name"))
     Procids = gsub(".processed.*.zip","",Procids)
-    names(Processed) = Procids
+    ##names(Processed) = Procids
+    Processed = rep(NA,length(ID))
+    names(Processed) = ID
+    Processed[which(ID %in% Procids)] = 'yes'
+    Processed[which(!ID %in% Procids)] = 'no'
 
     date = getelt(x, node = "releasedate",  element = "releasedate.children.text.value")
     

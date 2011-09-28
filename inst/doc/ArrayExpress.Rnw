@@ -93,18 +93,18 @@ The \Rclass{experimentData} of 'rawset' contains the experiment annotation file 
 In the case of non Affymetrix experiments, \Rfunction{ArrayExpress} decides automatically, based on known quantitation types, which column from the scan files are to be used to fill the \Rclass{exprs}. However, in some cases the scanner software is not recognized or unknown and this decision cannot be made automatically. The argument 'rawcol' is then needed. Here is an example.
 
 <<ArrayExpress-columnsneeded>>=
-eset = try(ArrayExpress("E-DKFZ-1"))
+eset = try(ArrayExpress("E-MEXP-1870"))
 @
 %
 
 Here, the object cannot be built because the columns are not recognized. The error message also gives a list of possible column names. We can then call the function again, feeding the argument 'rawcol' with the appropriate column names.
 
 <<ArrayExpress-withcolumns, results=hide>>=
-eset = ArrayExpress("E-DKFZ-1",
-  rawcol=list(R="Software Unknown:Foreground red",
-    G="Software Unknown:Foreground green",
-    Rb="Software Unknown:Background red" ,
-    Gb="Software Unknown:Background green"))
+eset = ArrayExpress("E-MEXP-1870",
+  rawcol=list(R="ScanArray Express:F650 Mean",
+    G="ScanArray Express:F550 Mean",
+    Rb="ScanArray Express:B650 Mean",
+    Gb="ScanArray Express:B550 Mean"))
 @ 
 
 Then \Robject{eset} is created. However, there is still a warning, the \Rclass{phenoData} cannot be built. This means that the object is correctly created but the sample annotation has not been attached to it. It is still possible to manually correct the files and try to build the object. To do so, the functions \Rfunction{getAE} and \Rfunction{magetab2bioc}, used by the \Rfunction{ArrayExpress} function, can be called separately.

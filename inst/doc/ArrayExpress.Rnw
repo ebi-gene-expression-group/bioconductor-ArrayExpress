@@ -178,23 +178,25 @@ proset = procset(mexp1422, cn[2])
 \Robject{proset} is an \Rclass{ExpressionSet} containing the processed log(ratio) of the dataset E-MEXP-1422.
 
 
+%Turning off evaluation of this section for now (Oct 26, 2011) 
+%until ArrayExpress server failure is fixed
 \section{Example of a standard microarray analysis using data from ArrayExpress}
 In this section, we are briefly describing an analysis from the data import to the identification of differentially expressed genes, of data publicly available on ArrayExpress.
 
 The first step consists of importing a dataset from ArrayExpress. We chose E-MEXP-1416. This dataset studies the transcription profiling of melanized dopamine neurons isolated from male and female patients with Parkinson disease to investigate gender differences.
-<<import, results=hide>>=
+<<import, eval=FALSE, results=hide>>=
 AEset = ArrayExpress("E-MEXP-1416")
 @ 
 
 As AEset is an Affymetrix experiment, we can use RMA normalisation to process the raw data, please read the rma function help.
-<<norm, results=hide>>=
+<<norm, eval=FALSE, results=hide>>=
 library("affy")
 AEsetnorm = rma(AEset)
 @ 
 
 To check the normalisation efficiency, we can run a quality assessment. For details on the arguments used, please read the arrayQualityMetrics vignette. Please note that, at the time of its release (Oct 2010), Bioconductor 2.7 didn't include a 64-bit Windows binary version of the \Rpackage{arrayQualityMetrics} package (but this might change in the future).
-<<fac>>=
-fac = grep("Factor.Value",colnames(pData(AEset)), value=T)
+<<fac, eval=FALSE, results=hide>>=
+fac = grep("Factor.Value",colnames(pData(AEsetnorm)), value=T)
 @
 %Turning off evaluation for now (Oct 15, 2010) until someone has the time to
 %troubleshoot the following error on Windows:
@@ -206,15 +208,14 @@ fac = grep("Factor.Value",colnames(pData(AEset)), value=T)
 if (suppressWarnings(require("arrayQualityMetrics", quietly=TRUE))) {
   qanorm = arrayQualityMetrics(AEsetnorm, 
     outdir = "QAnorm", 
-    intgroup = fac, 
-    grouprep = TRUE)
+    intgroup = fac)
 }
 @ 
 
 Now that we have ensured that the data are well processed, we can search for differentially expressed genes using the package \Rpackage{limma}. To understand the details of each steps, please see the limma user guide.
-<<limma, results=hide>>=
+<<limma, eval=FALSE, results=hide>>=
 library("limma")
-facs =  pData(AEset)[,fac]
+facs =  pData(AEsetnorm)[,fac]
 facs[facs[,2]=="female",2]="F"
 facs[facs[,2]=="male",2]="M"
 facs[facs[,1]=="Parkinson disease",1]="parkinson"

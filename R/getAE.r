@@ -12,7 +12,7 @@ getAE = function (input, path = getwd(), type = "full", extract = TRUE)
   
   if(type == "full" || type == "raw")
     {
-      nraw = length(gregexpr("raw.[0-9]{1,}.zip",ind[1,], fixed=FALSE)[[1]])/2
+      nraw = length(gregexpr("raw.[0-9]{1,}.zip",ind[12,], fixed=FALSE)[[1]])/2
 
       ##RAW DATA######################
       ## Saving temporarily the raw data
@@ -48,7 +48,7 @@ getAE = function (input, path = getwd(), type = "full", extract = TRUE)
     {
       ##PROCESSED DATA######################
       ## Saving temporarily the processed data
-      npro = length(gregexpr("processed.[0-9]{1,}.zip",ind[1,], fixed=FALSE)[[1]])/2
+      npro = length(gregexpr("processed.[0-9]{1,}.zip",ind[12,], fixed=FALSE)[[1]])/2
 
       procdata = lapply(1:npro, function(i) file.path(path,paste(input,".processed.",i,".zip",sep="")))
 

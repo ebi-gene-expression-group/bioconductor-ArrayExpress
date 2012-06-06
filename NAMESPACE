@@ -1,9 +1,12 @@
 importFrom("XML", "xmlTreeParse",
            "xmlRoot",
+           "xpathSApply",
+           "xpathApply",
+           "xmlValue",
            "xmlElementsByTagName",
            "getNodeSet",
            "xmlGetAttr")
 importFrom("limma", "read.maimages")
 importFrom("affy", "ReadAffy")
-export("ArrayExpress", "getAE", "queryAE", "magetab2bioc", "getcolproc", "getcolraw", "procset", "extract.zip")
+export("ArrayExpress", "getAE", "queryAE", "ae2bioc", "getcolproc", "getcolraw", "procset", "extract.zip")
 

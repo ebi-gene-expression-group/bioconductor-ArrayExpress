@@ -11,7 +11,7 @@
   \code{ArrayExpress} needs an Internet connection.
 }
 \usage{
-ArrayExpress(input, path = getwd(), save = FALSE, rawcol = NULL)
+ArrayExpress(input, path = getwd(), save = FALSE, dataCols = NULL)
 }
 \arguments{
   \item{input}{ an ArrayExpress identifier.

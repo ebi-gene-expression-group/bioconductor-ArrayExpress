@@ -34,7 +34,7 @@ getAE(input, path = getwd(), type = "full", extract = TRUE)
 mexp1422 = getAE("E-MEXP-1422", type = "full")
 
 ## Build a an ExpressionSet from the raw data
-MEXP1422raw = magetab2bioc(files = mexp1422)
+MEXP1422raw = ae2bioc(mageFiles = mexp1422)
 
 ## Build a an ExpressionSet from the processed data
 cnames = getcolproc(mexp1422)

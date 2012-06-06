@@ -101,7 +101,7 @@ Here, the object cannot be built because the columns are not recognized. The err
 
 <<ArrayExpress-withcolumns, results=hide>>=
 eset = ArrayExpress("E-MEXP-1870",
-  rawcol=list(R="ScanArray Express:F650 Mean",
+  dataCols=list(R="ScanArray Express:F650 Mean",
     G="ScanArray Express:F550 Mean",
     Rb="ScanArray Express:B650 Mean",
     Gb="ScanArray Express:B550 Mean"))
@@ -122,9 +122,9 @@ Here, the output is a list of all the files that have been downloaded and extrac
 
 \section{Build an R object from local raw MAGE-TAB}
 
-If you have your own raw MAGE-TAB data or if you want to build an R object from existing MAGE-TAB data that are stored locally on your computer. The function \Rfunction{magetab2bioc} can convert them into an R object.
+If you have your own raw MAGE-TAB data or if you want to build an R object from existing MAGE-TAB data that are stored locally on your computer. The function \Rfunction{ae2bioc} can convert them into an R object.
 
-The arguments for the \Rfunction{magetab2bioc} are:
+The arguments for the \Rfunction{ae2bioc} are:
 \begin{itemize}
 \item \emph{files} A list as given from \Rfunction{getAE} function. Containing the elements 'rawfiles' (the expression files to use to create the object), 'sdrf' (name of the sdrf file), 'idf' (name of the idf file), 'adf' (name of the adf file) and 'path' (the name of the directory containing these files).
 \item \emph{rawcol}  by default, the columns are automatically selected
@@ -139,8 +139,8 @@ The arguments for the \Rfunction{magetab2bioc} are:
 
 As an example, we can use the files that we have downloaded in the previous example.
 
-<<magetab2bioc-full>>=
-rawset= magetab2bioc(files = mexp1422)
+<<ae2bioc-full>>=
+rawset= ae2bioc(mageFiles = mexp1422)
 @
 %
 The object \Robject{rawset} is an \Rclass{AffyBatch}.

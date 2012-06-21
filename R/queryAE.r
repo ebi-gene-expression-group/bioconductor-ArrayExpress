@@ -1,5 +1,4 @@
-getelt = function(x, node, element)
-  {
+getelt = function(x, node, element){
     elt = sapply(1:length(xmlRoot(x)), function(i){
       if(length(grep(node,names(xmlRoot(x)[[i]])))  != 0)
         unlist(xmlElementsByTagName(xmlRoot(x)[[i]], node))[names(unlist(xmlElementsByTagName(xmlRoot(x)[[i]], node)))== element]  else "NA" })
@@ -19,10 +18,9 @@ getelt = function(x, node, element)
 
     names(elt3) = NULL
     return(elt3)
-  }
+}
 
-geteltmulti = function(x, node, element1, element2)
- {
+geteltmulti = function(x, node, element1, element2){
 elt = sapply(1:length(xmlRoot(x)), function(i){
      if(length(grep(node,names(xmlRoot(x)[[i]])))  != 0){
           lapply(1:length(xmlElementsByTagName(xmlRoot(x)[[i]], node)), function(j) {
@@ -43,18 +41,23 @@ elt = sapply(1:length(xmlRoot(x)), function(i){
 
    names(elt4) = NULL
    return(elt4)
- }
+}
 
-queryAE = function(keywords = NULL, species = NULL)
-  {
-    if(!is.null(keywords))
-      {
-        qr = paste("http://www.ebi.ac.uk/microarray-as/ae/xml/experiments?keywords=",keywords,sep="")
+queryAE = function(keywords = NULL, species = NULL){
+	
+	if(is.null(keywords) && is.null(species))
+		stop("No keywords or species specified")
+	
+	baseURL = "http://www.ebi.ac.uk/arrayexpress/xml/v2/experiments";
+    
+	if(!is.null(keywords)){
+        qr = paste(baseURL,"?keywords=",keywords,sep="")
         if(!is.null(species))
           qr = paste(qr,"&species=",species,sep="")
-      }
-    if(is.null(keywords) && !is.null(species))
-      qr = paste("http://www.ebi.ac.uk/microarray-as/ae/xml/experiments?species=",species,sep="")
+    }
+    
+	if(is.null(keywords) && !is.null(species))
+      qr = paste(baseURL,"?species=",species,sep="")
     
     queryfilename = paste("query",keywords,species,".xml",sep="")
     query = try(download.file(qr, queryfilename, mode="wb"))

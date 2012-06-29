@@ -22,11 +22,11 @@ ArrayExpress(input, path = getwd(), save = FALSE, dataCols = NULL)
     default is the current directory.}
   \item{save}{ if TRUE, the files downloaded from the
     database will not be deleted from path after executing the function.}
-  \item{rawcol}{ by default, for the raw data, the columns are
+  \item{dataCols}{ by default, for the raw data, the columns are
     automatically selected
     according to the scanner type. If the scanner is unknown or if the
     user wants to use different columns than the default, the argument
-    'rawcol' can be set. For two colour arrays it must be a list with
+    'dataCols' can be set. For two colour arrays it must be a list with
     the fields 'R', 'G', 'Rb' and 'Gb' giving the column names to be
     used for red and green foreground and background. For one colour
     arrays, it must be a character string with the column name to be

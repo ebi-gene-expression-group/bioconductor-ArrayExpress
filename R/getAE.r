@@ -91,9 +91,9 @@ getAE = function (input, path = getwd(), type = "raw", extract = TRUE) {
 			rawArchive = unlist(rawArchive)
 			rawArchive = basename(rawArchive)
 		}
-		
+			
 	}
-	
+
 	if((type == "full" || type == "processed") && !is.null(procArchiveURL)){
 		##PROCESSED DATA######################
 		## Saving temporarily the processed data
@@ -135,14 +135,14 @@ getAE = function (input, path = getwd(), type = "raw", extract = TRUE) {
 					})
 		if(!is.null(processedArchive))
 			processedFiles<-lapply(processedArchive, function(zipfile){
-						procfiles = extract.zip(file = zipfile)
-						return(procfiles)
-					})
-		
-		if(!is.null(rawFiles))
-			rawFiles = unlist(rawFiles)
-		if(!is.null(processedFiles))
-			processedFiles = unlist(processedFiles)
+					procfiles = extract.zip(file = zipfile)
+					return(procfiles)
+				})
+	
+	if(!is.null(rawFiles))
+		rawFiles = unlist(rawFiles)
+	if(!is.null(processedFiles))
+		processedFiles = unlist(processedFiles)
 	}
 	
 	res = list(path = path,  

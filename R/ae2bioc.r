@@ -50,7 +50,6 @@ ae2bioc = function(mageFiles, dataCols, save = TRUE){
 		}	
 		
 		#read data files
-		message("ArrayExpress: Reading data files")
 		rawdata= try(readAEdata(path = path,files = dataFiles,dataCols=dataCols))
 		if(inherits(rawdata, "try-error"))
 			stop("Cannot read assay Data")
@@ -79,15 +78,15 @@ ae2bioc = function(mageFiles, dataCols, save = TRUE){
 		if(class(rawdata) == "RGList"){
 			#construct nchannelset
 			assayData = if("Rb" %in% names(rawdata))
-						with(rawdata, assayDataNew(R = R, G = G, Rb = Rb, Gb = Gb)) 
-					else 
-						with(rawdata, assayDataNew(R = R, G = G))
-			
+							with(rawdata, assayDataNew(R = R, G = G, Rb = Rb, Gb = Gb)) 
+						else 
+							with(rawdata, assayDataNew(R = R, G = G))
+				
 			raweset = new("NChannelSet",
-					assayData = assayData,
-					featureData = features,
-					experimentData = experimentData)
-			
+							assayData = assayData,
+							featureData = features,
+							experimentData = experimentData)
+					
 			raweset = try(assign.pheno.ncs(files = dataFiles,ph = ph,raweset = raweset))
 		}
 		
@@ -95,10 +94,10 @@ ae2bioc = function(mageFiles, dataCols, save = TRUE){
 			#construct expressionSet
 			assayData = rawdata$G
 			raweset = new("ExpressionSet",
-					expr = rawdata$G,
-					phenoData = ph,
-					featureData = features,
-					experimentData = experimentData)
+							expr = rawdata$G,
+							phenoData = ph,
+							featureData = features,
+							experimentData = experimentData)
 		}
 		
 		
@@ -125,7 +124,7 @@ ae2bioc = function(mageFiles, dataCols, save = TRUE){
 #			#check number of assays in rawset is equal to those in ph
 #			phenoData(rawset) = ph
 #		}
-		
+			
 		#attach experiment meta data
 #		rawesetex = try(creating_experiment(idf = idf, eset = rawset, path = path))
 #		if(!inherits(rawesetex, "try-error"))
@@ -138,8 +137,8 @@ ae2bioc = function(mageFiles, dataCols, save = TRUE){
 #		if(!inherits(rawesetex, "try-error"))
 #			rawset = rawesetex 
 #		else warning("Cannot attach featureData")
-		
+			
 	}
-	
+		
 	return(raweset)
 }

@@ -30,7 +30,7 @@ headers<-list(
 readPhenoData = function(sdrf,path){
 	
 	ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$", quote="\""))
-	
+		
 	if(!inherits(ph, 'try-error')){
 		#Remove empty rows from pheno data
 		emptylines = which(sapply(seq_len(nrow(pData(ph))), function(i) all(pData(ph)[i,] == "",na.rm = TRUE)))
@@ -59,6 +59,8 @@ readPhenoData = function(sdrf,path){
 }
 
 readAEdata = function(path,files,dataCols,...){
+	
+	message("ArrayExpress: Reading data files")
 	if(length(grep(".cel",files, ignore.case = TRUE)) == length(files)){
 		#Affy experiments
 		rawdata = try(ReadAffy(filenames = file.path(path,unique(files)))) 
@@ -115,6 +117,7 @@ readFeatures<-function(rawdata,adf,path){
 	if(class(rawdata) == "AffyBatch")
 		return(rawdata)
 	
+	message("ArrayExpress: Reading feature metadata from ADF")
 #	if(rawdata$source=="agilent"){
 #		rawdata<-rawdata[with(rawdata$genes,order(Row,Col)),]		
 #	}
@@ -124,11 +127,17 @@ readFeatures<-function(rawdata,adf,path){
 #	if(rawdata$source=="ae1"){
 #		rawdata<-rawdata[with(rawdata$genes,order(metaRow,metaColumn,row,column)),]
 #	}
-	
+		
 	#Sort ADF features by columns Block row/Block column/Row/Column
 	lines2skip = skipADFheader(adf,path)
 	features = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", skip = lines2skip, header=TRUE, quote=""))
 	features<-features[with(features,order(Block.Row,Block.Column,Row,Column)),]
+	ommittedRows<-which(is.na(features[,'Reporter.Name']))
+	
+	if(length(ommittedRows)!=0){
+		message("ArrayExpress: Ommitting NA rows from ADF")
+		features<- features[-ommittedRows,]
+	}
 	
 	#Row names of featureData must match row names of the matrix / matricies in assayData
 	#rownames(features) = 
@@ -139,7 +148,7 @@ readFeatures<-function(rawdata,adf,path){
 #	if(all(adff2[,ri1] == fn[,ri2])) 
 #		featureData(eset) = new("AnnotatedDataFrame",adff2) 
 #	else stop("Do not manage to map the reporter identifier between the annotation and the data files.\n")
-	
+
 	return(new("AnnotatedDataFrame",features))
 }
 
@@ -179,7 +188,7 @@ readExperimentData = function(idf, path){
 					experimentalFactor = c(idf.data$"Experimental Factor Type"), 
 					##Experimental Design
 					type = c(idf.data$"Experimental Design")
-			#measurementType = experimentData(eset)@other$measurementType #from processed data.zip depending on user answer about QT type
+					#measurementType = experimentData(eset)@other$measurementType #from processed data.zip depending on user answer about QT type
 			)
 	)
 	#experimentData(eset) = experimentData
@@ -347,8 +356,17 @@ getDataColsForAE1 = function(path,files){
 
 ## assign phenoData to Nchannelset
 assign.pheno.ncs = function(ph,files,raweset){
-	si = pData(ph)[1:(length(files)*2),] # This is a cheat
+	si = pData(ph)[1:(length(files)*2),]
 	lab = split(si,si[,"Label"])
+	arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))
+	
+	#Reorder rows in each group (Cy3,Cy5) to the same order
+#	seq<-with(lab[[1]],order(ArrayData.File))
+	lab[[1]] = lab[[1]][order(lab[[1]][,arrayDataCol]),]
+	lab[[2]] = lab[[2]][order(lab[[2]][,arrayDataCol]),]
+	
+	
+	
 	same = which(lapply(1:ncol(lab[[1]]), function(i) all(lab[[1]][i] == lab[[2]][i])) == TRUE)
 	all = lab[[1]][same]
 	gspe = lab[[1]][-same]
@@ -357,10 +375,14 @@ assign.pheno.ncs = function(ph,files,raweset){
 	colnames(rspe) = paste(colnames(rspe),names(lab)[2],sep = ".")
 	
 	metaData = data.frame(labelDescription = c(rep("_ALL_",ncol(all)),rep("G",ncol(gspe)),rep("R",ncol(rspe))))
-	
 	samples = new("AnnotatedDataFrame", data = cbind(all,gspe,rspe), varMetadata = metaData)
 	
-	rownames(pData(samples)) = gsub(".[a-z][a-z][a-z]$","",samples$Array.Data)
+	arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(samples))	
+	rownames(pData(samples)) = gsub(".[a-z][a-z][a-z]$","",samples[[arrayDataCol]])
+	
+	if(nrow(samples) != length(sampleNames(raweset)))
+		warning("Number of data files read does not match available sample annotations")
+	
 	pData(samples) = pData(samples)[sampleNames(raweset),]
 	phenoData(raweset) = samples
 	return(raweset)
@@ -387,8 +409,8 @@ prepPhenoDataFor2channel = function(ph,files,raweset){
 
 getSDRFcolumn = function(col,headers){
 	pattern<-switch(col,
-			ArrayDataFile = "Array[[:punct:]|[:blank:]]*Data[[:punct:]|[:blank:]]*File",
-			ArrayDesignREF = "Array[[:punct:]|[:blank:]]*Design[[:punct:]|[:blank:]]*REF",
+			ArrayDataFile = "^Array[[:punct:]|[:blank:]]*Data[[:punct:]|[:blank:]]*File",
+			ArrayDesignREF = "^Array[[:punct:]|[:blank:]]*Design[[:punct:]|[:blank:]]*REF",
 			label = "^Label$")
 	colIndex = grep(pattern,headers,ignore.case = TRUE)
 	return(colIndex)

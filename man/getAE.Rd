@@ -7,7 +7,7 @@
   ArrayExpress dataset.
 }
 \usage{
-getAE(input, path = getwd(), type = "full", extract = TRUE)
+getAE(input, path = getwd(), type = "raw", extract = TRUE)
 }
 \arguments{
   \item{input}{ is an ArrayExpress identifier. }

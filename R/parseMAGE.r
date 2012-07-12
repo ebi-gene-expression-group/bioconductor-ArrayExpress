@@ -128,16 +128,18 @@ readFeatures<-function(rawdata,adf,path){
 #		rawdata<-rawdata[with(rawdata$genes,order(metaRow,metaColumn,row,column)),]
 #	}
 		
-	#Sort ADF features by columns Block row/Block column/Row/Column
-	lines2skip = skipADFheader(adf,path)
-	features = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", skip = lines2skip, header=TRUE, quote=""))
-	features<-features[with(features,order(Block.Row,Block.Column,Row,Column)),]
-	ommittedRows<-which(is.na(features[,'Reporter.Name']))
 	
+	lines2skip = skipADFheader(adf,path)
+	features = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", na.strings=c('?','NA'), skip = lines2skip, header=TRUE, quote=""))
+	
+	ommittedRows = which(is.na(features[,'Block.Column']) | is.na(features[,'Reporter.Name']))
 	if(length(ommittedRows)!=0){
 		message("ArrayExpress: Ommitting NA rows from ADF")
 		features<- features[-ommittedRows,]
 	}
+	
+	#Sort ADF features by columns Block row/Block column/Row/Column
+	features = features[with(features,order(Block.Row,Block.Column,Row,Column)),]
 	
 	#Row names of featureData must match row names of the matrix / matricies in assayData
 	#rownames(features) = 

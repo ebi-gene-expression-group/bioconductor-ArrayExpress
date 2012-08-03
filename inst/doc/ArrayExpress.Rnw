@@ -26,8 +26,8 @@
 
 \section{ArrayExpress database} 
 
-ArrayExpress is a public repository for transcriptomics and related data, which is aimed at storing MIAME-compliant data in accordance with MGED recommendations. The ArrayExpress Data Warehouse stores gene-indexed expression profiles and related measurements from a curated subset of experiments in the repository.
-Currently, around 220 000 hybridizations are represented in ArrayExpress. Please visit http://www.ebi.ac.uk/arrayexpress/ for more information on the database.
+ArrayExpress is a public repository for transcriptomics and related data, which is aimed at storing MIAME-compliant data in accordance with MGED recommendations. The Gene Expression Atlas stores gene-condition summary expression profiles from a curated subset of experiments in the repository.
+Currently, around 917 460 assays are represented in ArrayExpress. Please visit http://www.ebi.ac.uk/arrayexpress/ for more information on the database.
 
 \section{MAGE-TAB format}
 In the repository, for each dataset, ArrayExpress stores a MAGE-TAB document with standardized format. A MAGE-TAB document contains five different types of files Investigation Description Format (IDF), Array Design Format (ADF), Sample and Data Relationship Format (SDRF), the raw data files and the processed data files. The tab-delimited IDF file contains top level information about the experiment including title, description, submitter contact details and protocols. The tab-delimited ADF file describes the design of an array, e.g., what sequence is located at each position on an array and what the annotation of this sequence is. The tab-delimited SDRF file contains the sample annotation and the relationship between arrays as provided by the submitter. The raw zip file contains the raw files (like the CEL files for Affymetrix chips or the GPR files from the GenePix scanner for instance),  and the processed zip file contains all processed data in one generic tab delimited text format.
@@ -44,7 +44,7 @@ sets = queryAE(keywords = "pneumonia", species = "homo+sapiens")
 @
 %
 
-In March 2009, this query was giving 202 identifiers. The output is a dataframe with the identifiers and 7 columns giving the number of data raw and processed. When raw and processed data are available for the same dataset, a unique identifier is given for both. There is no way to distinguish between a processed and a raw dataset just from the identifier. The column 'Raw' from the output of \Rfunction{queryAE} allows to know if the raw data are available for a data set.
+In August 2012, this query retrieved 21 identifiers. The output is a dataframe with the identifiers and 7 columns giving the number of data raw and processed. When raw and processed data are available for the same dataset, a unique identifier is given for both. There is no way to distinguish between a processed and a raw dataset just from the identifier. The column 'Raw' from the output of \Rfunction{queryAE} allows to know if the raw data are available for a data set.
 The following columns contain the release date of the dataset on the database, the pubmed ID of the publication related to the dataset, the species, the experiment design and the experimental factors.
 The experiment design defines what was studied by the authors, such as time series, disease state or compound treatment. The experimental factors are the values of the studied factors, "Day 1", "Day 2" for instance.
 For a more extended querying mode, the ArrayExpress website offers an advanced query interface with detailed results.
@@ -61,10 +61,10 @@ Once you know which identifier you wish to retrieve, the function \Rfunction{Arr
     default is the current directory.
 \item \emph{save}: if TRUE, the files downloaded from the
     database will not be deleted from 'path' after executing the function.
-\item \emph{rawcol}: by default, the columns are automatically selected
+\item \emph{dataCols}: by default, the columns are automatically selected
     according to the scanner type. If the scanner is unknown or if the
     user wants to use different columns than the default, the argument
-    'rawcol' can be set. For two colour arrays it must be a list with
+    'dataCols' can be set. For two colour arrays it must be a list with
     the fields 'R', 'G', 'Rb' and 'Gb' giving the column names to be
     used for red and green foreground and background. For one colour
     arrays, it must be a character string with the column name to be
@@ -97,7 +97,7 @@ eset = try(ArrayExpress("E-MEXP-1870"))
 @
 %
 
-Here, the object cannot be built because the columns are not recognized. The error message also gives a list of possible column names. We can then call the function again, feeding the argument 'rawcol' with the appropriate column names.
+Here, the object cannot be built because the columns are not recognized. The error message also gives a list of possible column names. We can then call the function again, feeding the argument 'dataCols' with the appropriate column names.
 
 <<ArrayExpress-withcolumns, results=hide>>=
 eset = ArrayExpress("E-MEXP-1870",
@@ -107,7 +107,7 @@ eset = ArrayExpress("E-MEXP-1870",
     Gb="ScanArray Express:B550 Mean"))
 @ 
 
-Then \Robject{eset} is created. However, there is still a warning, the \Rclass{phenoData} cannot be built. This means that the object is correctly created but the sample annotation has not been attached to it. It is still possible to manually correct the files and try to build the object. To do so, the functions \Rfunction{getAE} and \Rfunction{magetab2bioc}, used by the \Rfunction{ArrayExpress} function, can be called separately.
+Then \Robject{eset} is created. However, there is still a warning, the \Rclass{phenoData} cannot be built. This means that the object is correctly created but the sample annotation has not been attached to it. It is still possible to manually correct the files and try to build the object. To do so, the functions \Rfunction{getAE} and \Rfunction{ae2bioc}, used by the \Rfunction{ArrayExpress} function, can be called separately.
 
 \section{Download an ArrayExpress dataset on your local machine}
 
@@ -126,10 +126,10 @@ If you have your own raw MAGE-TAB data or if you want to build an R object from 
 
 The arguments for the \Rfunction{ae2bioc} are:
 \begin{itemize}
-\item \emph{files} A list as given from \Rfunction{getAE} function. Containing the elements 'rawfiles' (the expression files to use to create the object), 'sdrf' (name of the sdrf file), 'idf' (name of the idf file), 'adf' (name of the adf file) and 'path' (the name of the directory containing these files).
-\item \emph{rawcol}  by default, the columns are automatically selected
+\item \emph{mageFiles} A list as given from \Rfunction{getAE} function. Containing the elements 'rawFiles' (the expression files to use to create the object), 'sdrf' (name of the sdrf file), 'idf' (name of the idf file), 'adf' (name of the adf file) and 'path' (the name of the directory containing these files).
+\item \emph{dataCols}  by default, the columns are automatically selected
     according to the scanner type. If the scanner is unknown, the argument
-    'rawcol' can be set. For two colour arrays it must be a list with
+    'dataCols' can be set. For two colour arrays it must be a list with
     the fields 'R', 'G', 'Rb' and 'Gb' giving the column names to be
     used for red and green foreground and background. For one colour
     arrays, it must be a character string with the column name to be

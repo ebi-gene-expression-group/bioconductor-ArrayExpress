@@ -48,12 +48,13 @@ ArrayExpress(input, path = getwd(), save = FALSE, dataCols = NULL)
 \seealso{
   \code{\link[ArrayExpress]{queryAE}},
   \code{\link[ArrayExpress]{getAE}},
-  \code{\link[ArrayExpress]{magetab2bioc}},
+  \code{\link[ArrayExpress]{ae2bioc}},
   \code{\link[ArrayExpress]{getcolproc}},
   \code{\link[ArrayExpress]{procset}}}
 \author{
-  Audrey Kauffmann 
-  Maintainer: <kauffmann@bergonie.org>  
+  Audrey Kauffmann, Ibrahim Emam 
+  
+  Maintainer: <iemam@ebi.ac.uk>  
 }
 \examples{
 ETABM25.affybatch = ArrayExpress(input = "E-TABM-25")

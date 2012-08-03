@@ -1,20 +1,29 @@
 ArrayExpress = function(input, path = getwd(), save = FALSE, dataCols = NULL){
 	
-	## Extracting the data if the checking was fine
-	extract = getAE(input, path, type = "raw")
+	expFiles = getAE(input, path, type = "raw")
 	
-	raweset = ae2bioc(mageFiles = extract,
-			dataCols = dataCols,
-			save = save)
+#	if(!save) 
+#		on.exit(cleanupAE(expFiles))
 	
-	if(inherits(raweset, 'try-error') && length(grep("following", raweset))!=0)
+	raweset = try(ae2bioc(mageFiles = expFiles, dataCols = dataCols))
+	
+	if(inherits(raweset, 'try-error')){
 		save = TRUE
+		raweset = expFiles
+	}
+	else{
+		if(length(raweset)==1){
+			raweset = raweset[[1]];
+			message(paste("\n",input," was successfully loaded into ",class(raweset),"\n"))
+		}
+		else if(length(raweset)>1){
+			message(paste("\n",input," was successfully loaded into ",length(raweset)," ",class(raweset[[1]]),"(s)\n"))
+		}
+	}
+		
 	
 	if(!save) 
-		on.exit(cleanupAE(extract))
-	
-	if(!inherits(raweset, 'try-error'))
-		message(paste("\n The object containing experiment ", input," has been built.\n"))
+		on.exit(cleanupAE(expFiles))
 	
 	return(raweset)
-}#end of ArrayExpress
+}

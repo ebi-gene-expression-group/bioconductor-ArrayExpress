@@ -26,9 +26,9 @@ queryAE(keywords = NULL, species = NULL)
 \seealso{\code{\link[ArrayExpress]{ArrayExpress}},
   \code{\link[ArrayExpress]{getAE}}} 
 \author{
-  Audrey Kauffmann
+  Ibrahim Emam, Audrey Kauffmann
   
-  Maintainer: <kauffmann@bergonie.org>  
+  Maintainer: <iemam@ebi.ac.uk>  
 }
 \examples{
 ## To retrieve all the identifiers of pneumonia data sets

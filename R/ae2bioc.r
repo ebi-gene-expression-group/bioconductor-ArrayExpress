@@ -1,10 +1,10 @@
-# TODO: Add comment
+# A function that takes ArrayExpress MAGETAB files for a specific experiment and returns an equivalent R object representation (NChannelSet, ExpressionSet or AffyBatch) 
 # 
 # Author: iemam
 ###############################################################################
 
 
-ae2bioc = function(mageFiles, dataCols, save = TRUE){
+ae2bioc = function(mageFiles, dataCols=NULL){
 	
 #	if(!save) 
 #		on.exit(cleanupAE(as.list(mageFiles)))
@@ -21,124 +21,130 @@ ae2bioc = function(mageFiles, dataCols, save = TRUE){
 	if (length(notuse) == 0) 
 		dataFiles = dataFiles
 	dataFiles = dataFiles[dataFiles != ""]
+	allDataFiles = dataFiles;
+	
+	if(length(dataFiles)==0)
+		stop("ArrayExpress: Experiment has no raw files available. Consider using processed data instead by following procedure in the vignette")
 	
 	#read sample annotations
-	message("ArrayExpress: Reading pheno data from SDRF")
 	ph = readPhenoData(sdrf,path);
-	
-	if(is.null(ph)){
-		stop("Parsing SDRF failed. Please make sure SDRF file ",sdrf," exists in ",path, " and is not corrupt.")
+	if(inherits(ph, 'try-error')){
+		ph=NULL
+		stop("ArrayExpress: Parsing SDRF failed. Please make sure SDRF file ",sdrf," exists in ",path, " and is not corrupt.")
 	}
+	fullPhenoData = ph;
+		
+	#Check
+	arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))
+	if(!all(dataFiles %in% ph[[arrayDataCol]]))
+		warning("Some data files in the zip archive are missing from the SDRF. The object may not be built.")
+	
 	
 	#adf ref in SDRF
 	adr = unique(pData(ph)[,getSDRFcolumn("ArrayDesignREF",varLabels(ph))])
 	adr = adr[adr != ""]
 	if(length(adr)>1)
 		message("ArrayExpress: Experiment uses multiple Array Designs. A separate expressionSet will be created for each")
-	
+		
+		
 	if((length(adr) == 0 || is.na(adr)) && length(grep(".cel",dataFiles, ignore.case = TRUE)) != 0)
-		warning("Cannot find the array design reference in the sdrf file. The object may not be built.")
+		warning("ArrayExpress: Cannot find the array design reference in the sdrf file. The object may not be built.")
 	if((length(adr) == 0 || is.na(adr)) && length(grep(".cel",dataFiles, ignore.case = TRUE)) == 0)
-		stop("Cannot find the array design reference in the sdrf file. The object cannot be built.")
+		stop("ArrayExpress: Cannot find the array design reference in the sdrf file. The object cannot be built.")
+	
+	#list of return R objects
+	robjs=list();
 	
 	for (ad in adr){
 		#Subselect SDRF data for current ArrayDesign REF
 		if(length(adr)>1){
-			res=getPhenoDataPerAD(ad,ph,dataFiles)
-			dataFiles = res["files"]
-			ph = res["ph"]	
+			res=getPhenoDataPerAD(ad,fullPhenoData,allDataFiles)
+			dataFiles = unique(res$dataFiles)
+			ph = res$pheno
 		}	
+		
 		
 		#read data files
 		rawdata= try(readAEdata(path = path,files = dataFiles,dataCols=dataCols))
 		if(inherits(rawdata, "try-error"))
-			stop("Cannot read assay Data")
+			stop("ArrayExpress: Unable to read assay data")
+		
+		
 		
 		#read and match array feature metadata to raw data
-		adfFile = adf[grep(ad,adf)]
-		features= try(readFeatures(rawdata=rawdata,adf=adfFile,path=path))
-		if(inherits(features, "try-error"))
-			warning("Cannot read feature Data")
-		
-		#read experiment meta data
-		experimentData = try(readExperimentData(idf=idf,path=path))
-		if(inherits(experimentData, "try-error"))
-			warning("Cannot read experiment Data")
-		
-		
-		
-		#Finally build ExpressionSet
-		
-		if(class(rawdata) == "AffyBatch"){
-			raweset=rawdata
-			experimentData(raweset) = experimentData
-			phenoData(raweset) = ph
+		if(class(rawdata) != "AffyBatch"){
+			adfFile = adf[grep(ad,adf)]
+			features= try(readFeatures(adf=adfFile,path=path))
+			if(inherits(features, "try-error")){
+				warning("ArrayExpress: Unable to read feature data")
+				features = NULL;
+			}
 		}
 		
-		if(class(rawdata) == "RGList"){
+			
+		#read experiment meta data
+		experimentData = try(readExperimentData(idf=idf,path=path))
+		if(inherits(experimentData, "try-error")){
+			warning("ArrayExpress: Unable to read experiment data");
+			experimentData = new("MIAME");
+		}
+			
+
+		#Finally build ExpressionSet
+		
+		#Attach pheno and feature data to AffyBatch
+		if(class(rawdata) == "AffyBatch"){
+			raweset=rawdata
+			dataSamples = gsub(".[a-z][a-z][a-z]$","",sampleNames(rawdata),ignore.case=T)
+			ph = ph[dataSamples,]
+			phenoData(raweset) = ph
+			sampleNames(protocolData(raweset)) = sampleNames(ph)
+			experimentData(raweset) = experimentData
+		}
+		
+		
+		if(class(rawdata) == "RGList" | class(rawdata) == "EListRaw"){
 			#construct nchannelset
-			assayData = if("Rb" %in% names(rawdata))
+			if(class(rawdata) == "RGList"){
+				assayData = if("Rb" %in% names(rawdata))
 							with(rawdata, assayDataNew(R = R, G = G, Rb = Rb, Gb = Gb)) 
 						else 
 							with(rawdata, assayDataNew(R = R, G = G))
 				
-			raweset = new("NChannelSet",
-							assayData = assayData,
-							featureData = features,
-							experimentData = experimentData)
-					
-			raweset = try(assign.pheno.ncs(files = dataFiles,ph = ph,raweset = raweset))
-		}
-		
-		if(class(rawdata) == "EListRaw"){
-			#construct expressionSet
-			assayData = rawdata$G
-			raweset = new("ExpressionSet",
-							expr = rawdata$G,
-							phenoData = ph,
-							featureData = features,
-							experimentData = experimentData)
-		}
-		
-		
-		
-#		if(class(rawdata) == "RGList"){
-#			assayData = if("Rb" %in% names(rawdata))
-#							with(rawdata, assayDataNew(R = R, G = G, Rb = Rb, Gb = Gb)) 
-#						else 
-#							with(rawdata, assayDataNew(R = R, G = G))}
-#		
-#		if(class(rawdata) == "EListRaw"){
-#			raweset = try(new("ExpressionSet",exprs = rawdata$G))
-#			if(inherits(raweset, "try-error"))
-#				stop(sprintf(raweset[1]))}
-		
-		
-		#attach phenoData		
-#		if(class(rawset)=="NChannelSet"){
-#			rawesetph = try(assign.pheno.ncs(files = dataFiles,ph = ph,raweset = rawset))
-#			if(!inherits(rawesetph, "try-error"))
-#				rawset = rawesetph
-#		}else{
-#			##pData(ph) = pData(ph)[sampleNames(raweset),]
-#			#check number of assays in rawset is equal to those in ph
-#			phenoData(rawset) = ph
-#		}
+				raweset = new("NChannelSet",
+								assayData = assayData,
+								experimentData = experimentData)
+			}
 			
-		#attach experiment meta data
-#		rawesetex = try(creating_experiment(idf = idf, eset = rawset, path = path))
-#		if(!inherits(rawesetex, "try-error"))
-#			rawset = rawesetex
-#		else warning("Cannot attach experimentData")
+			#construct expressionSet
+			if(class(rawdata) == "EListRaw"){
+				assayData = rawdata$G
+				raweset = new("ExpressionSet",
+								assayData = assayData,
+								experimentData = experimentData)
+			}
+			
+			#Attach pheno data
+			if(!is.null(ph)){
+				dataSamples = gsub(".[a-z][a-z][a-z]$","",rawdata$targets$FileName,ignore.case=T)
+				ph = ph[dataSamples,]
+				phenoData(raweset) = ph
+			}
+			
+			#Attach features
+			if(!is.null(features))
+				featureData(raweset) = features;
+			#consistency of order between features in featureData and assayData is established via previous sorting of feature columns
+			
+			if(length(featureNames(assayData(raweset))) != length(featureNames(featureData(raweset))))
+				warning("Number of features in assayData and featureData are not equal. Check control features (NA) that might have been removed from either assayData or featureData.");
+			
+		}
 		
-		#attach array meta data
-#		adfFile = adf[grep(ad,adf)]
-#		rawesetex = try(addADF(adf = adfFile, eset = rawset, path = path, files=dataFiles))
-#		if(!inherits(rawesetex, "try-error"))
-#			rawset = rawesetex 
-#		else warning("Cannot attach featureData")
+		
+		robjs[[grep(ad,adr)]]=raweset
 			
 	}
 		
-	return(raweset)
+	return(robjs)
 }

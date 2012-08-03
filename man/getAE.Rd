@@ -23,12 +23,13 @@ getAE(input, path = getwd(), type = "raw", extract = TRUE)
     have been downloaded and extracted. }
 }
 \seealso{\code{\link[ArrayExpress]{ArrayExpress}},
-  \code{\link[ArrayExpress]{magetab2bioc}},
+  \code{\link[ArrayExpress]{ae2bioc}},
   \code{\link[ArrayExpress]{getcolproc}},
   \code{\link[ArrayExpress]{procset}}}
 \author{
-  Audrey Kauffmann 
-  Maintainer: <kauffmann@bergonie.org>  
+  Ibrahim Emam, Audrey Kauffmann 
+  
+  Maintainer: <iemam@ebi.ac.uk>  
 }
 \examples{
 mexp1422 = getAE("E-MEXP-1422", type = "full")

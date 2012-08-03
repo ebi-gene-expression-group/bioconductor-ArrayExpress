@@ -29,33 +29,65 @@ headers<-list(
 
 readPhenoData = function(sdrf,path){
 	
+	message("ArrayExpress: Reading pheno data from SDRF")
 	ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$", quote="\""))
 		
-	if(!inherits(ph, 'try-error')){
-		#Remove empty rows from pheno data
-		emptylines = which(sapply(seq_len(nrow(pData(ph))), function(i) all(pData(ph)[i,] == "",na.rm = TRUE)))
-		if(length(emptylines) != 0)
-			pData(ph) = pData(ph)[-emptylines,]
+	#Remove empty rows from pheno data
+	emptylines = which(sapply(seq_len(nrow(pData(ph))), function(i) all(pData(ph)[i,] == "",na.rm = TRUE)))
+	if(length(emptylines) != 0)
+		pData(ph) = pData(ph)[-emptylines,]
 		
-		phenoData = pData(ph)
-		arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))
-		labelCol = getSDRFcolumn("label",varLabels(ph))
-		if(length(arrayDataCol)!=0){
-			#filter out duplicated rows where multiple derived data files are available per one array data file
-			ph=ph[!duplicated(phenoData[,c(arrayDataCol,labelCol)])]
-			
-			phenoData = pData(ph)
-			#set rownames of phenoData annotated data frame to array data files
-			#rownames(pData(ph)) = phenoData[,arrayDataCol]
-			#rownames(pData(ph)) = gsub(".[a-z][a-z][a-z]$","",ph$Array.Data)
-		}else
-			warning("Cannot find 'Array Data File' column in SDRF. Object might not be created correctly.")
+	phenoData = pData(ph)
+	arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))
+	labelCol = getSDRFcolumn("label",varLabels(ph))
+	
+	if(length(arrayDataCol)==0 || length(labelCol)==0)
+		if(length(arrayDataCol)==0)
+			warning("ArrayExpress: Cannot find 'Array Data File' column in SDRF. Object might not be created correctly.")
+		if(length(labelCol)==0)
+			warning("ArrayExpress: Cannot find 'Label' column in SDRF. Object might not be created correctly.")
+		
+	if(length(arrayDataCol)!=0 && length(labelCol)!=0){
+		#filter out duplicated rows where multiple derived data files are available per one array data file
+		ph=ph[!duplicated(phenoData[,c(arrayDataCol,labelCol)])]
+	}
+	
+	
+	if(length(arrayDataCol)!=0 & length(unique(ph[[labelCol]]))==1)
+		#set rownames of phenoData annotated data frame to array data files			
+		rownames(pData(ph)) = gsub(".[a-z][a-z][a-z]$","",ph[[arrayDataCol]],ignore.case=T)
+	
+	
+	#treat SDRF for two channel experiments
+	if(length(unique(ph[[labelCol]]))==2){
+		
+		arrayFilesNum = length(unique(ph[[arrayDataCol]]))
+		
+		si = pData(ph)[1:(arrayFilesNum*2),]
+		lab = split(si,si[,"Label"])
+		
+		#Reorder rows in each group (Cy3,Cy5) to the same order
+		lab[[1]] = lab[[1]][order(lab[[1]][,arrayDataCol]),]
+		lab[[2]] = lab[[2]][order(lab[[2]][,arrayDataCol]),]
+		
+		same = which(lapply(1:ncol(lab[[1]]), function(i) all(lab[[1]][i] == lab[[2]][i])) == TRUE)
+		all = lab[[1]][same]
+		gspe = lab[[1]][-same]
+		colnames(gspe) = paste(colnames(gspe),names(lab)[1],sep = ".")
+		rspe = lab[[2]][-same]
+		colnames(rspe) = paste(colnames(rspe),names(lab)[2],sep = ".")
+		
+		metaData = data.frame(labelDescription = c(rep("_ALL_",ncol(all)),rep("G",ncol(gspe)),rep("R",ncol(rspe))))
+		ph = new("AnnotatedDataFrame", data = cbind(all,gspe,rspe), varMetadata = metaData)
+		
+		arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))	
+		rownames(pData(ph)) = gsub(".[a-z][a-z][a-z]$","",ph[[arrayDataCol]],ignore.case=T)
+	}
+		
 		
 #		if(!all(basename(files) %in% pData(ph)[,getSDRFcolumn("ArrayDataFile",varLabels(ph))]))
 #			warning("Some data files in the zip archive are missing from the SDRF. The object may not be built.")
-		return(ph)
-	}else
-		return(NULL)
+	return(ph)
 }
 
 readAEdata = function(path,files,dataCols,...){
@@ -80,6 +112,7 @@ readAEdata = function(path,files,dataCols,...){
 #			stop("The names of the columns must contain R and G.")
 #	}
 		
+		
 		#Old AE1 formatted data files
 		if(source=="ae1"){
 			if (is.null(dataCols))
@@ -93,7 +126,7 @@ readAEdata = function(path,files,dataCols,...){
 			rawdata = read.maimages(files=files,path=path,source=source)
 		}else
 			# TODO: add more formats
-			stop("Unable to read data file from ",source)
+			stop()
 		
 		#reorder rows of RGList to reflect the same order in ADF as Block Row/Block Column/Row/Column
 		if(is.null(rawdata$genes))
@@ -112,41 +145,42 @@ readAEdata = function(path,files,dataCols,...){
 	return(rawdata)
 }
 
-readFeatures<-function(rawdata,adf,path){
-	
-	if(class(rawdata) == "AffyBatch")
-		return(rawdata)
+readFeatures<-function(adf,path,procADFref=NULL){
 	
 	message("ArrayExpress: Reading feature metadata from ADF")
-#	if(rawdata$source=="agilent"){
-#		rawdata<-rawdata[with(rawdata$genes,order(Row,Col)),]		
-#	}
-#	if(rawdata$source=="genepix"){	
-#		rawdata<-rawdata[with(rawdata$genes,order(Block,Row,Column)),]
-#	}
-#	if(rawdata$source=="ae1"){
-#		rawdata<-rawdata[with(rawdata$genes,order(metaRow,metaColumn,row,column)),]
-#	}
 		
-	
-	lines2skip = skipADFheader(adf,path)
+	lines2skip = skipADFheader(adf,path,!is.null(procADFref))
 	features = try(read.table(file.path(path, adf), row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, sep="\t", na.strings=c('?','NA'), skip = lines2skip, header=TRUE, quote=""))
 	
-	ommittedRows = which(is.na(features[,'Block.Column']) | is.na(features[,'Reporter.Name']))
-	if(length(ommittedRows)!=0){
-		message("ArrayExpress: Ommitting NA rows from ADF")
-		features<- features[-ommittedRows,]
+	if('Block.Column' %in% colnames(features) & 'Reporter.Name' %in% colnames(features)){
+		ommittedRows = which(is.na(features[,'Block.Column']) | is.na(features[,'Reporter.Name']))
+		if(length(ommittedRows)!=0){
+			message("ArrayExpress: Ommitting NA rows from ADF")
+			features = features[-ommittedRows,]
+		}
 	}
 	
-	#Sort ADF features by columns Block row/Block column/Row/Column
-	features = features[with(features,order(Block.Row,Block.Column,Row,Column)),]
+#	if("Reporter.Identifier" %in% colnames(features))
+#		featurenames = features[,"Reporter.Identifier"]
+#	if("Composite.Element.Name" %in% colnames(features))
+#		featurenames = features[,"Composite.Element.Name"]
+#	if("Reporter.Name" %in% colnames(features))
+#		featurenames = features[,"Reporter.Name"]
+	
+	if(!is.null(procADFref)){
+		if(procADFref %in% colnames(features))
+			rownames(features) = features[,procADFref]
+	}
+	
+#	rownames(features) = make.names(featurenames,unique=TRUE)
+	
+	#Sort ADF features by columns Block row/Block column/Row/Column (only applicable for raw data exps, processed data is ordered by reporter/composite name)
+	if("Block.Row" %in% colnames(features))
+		features = features[with(features,order(Block.Row,Block.Column,Row,Column)),]
 	
 	#Row names of featureData must match row names of the matrix / matricies in assayData
-	#rownames(features) = 
-	
 #	ri1 = grep("reporter.identifier|reporter.name", colnames(adff), ignore.case=TRUE)
-#	ri2 = grep("reporter.identifier|reporter.name", colnames(fn), ignore.case=TRUE)
-#	
+#	ri2 = grep("reporter.identifier|reporter.name", colnames(fn), ignore.case=TRUE)	
 #	if(all(adff2[,ri1] == fn[,ri2])) 
 #		featureData(eset) = new("AnnotatedDataFrame",adff2) 
 #	else stop("Do not manage to map the reporter identifier between the annotation and the data files.\n")
@@ -197,20 +231,27 @@ readExperimentData = function(idf, path){
 	return(experimentData)	  
 }
 
-skipADFheader<-function(adf,path){
-	columns<-list('Block Column','Block Row','Column','Row')
-	con <- file(file.path(path, adf), "r")	
+skipADFheader<-function(adf,path,proc=F){
+	if(!proc)
+		columns = list('Block Column','Block Row','Column','Row')
+	else
+		columns = list('Composite Element Name')
+	
+	con = file(file.path(path, adf), "r")	
 	on.exit(close(con))
 	
-	Found <- FALSE
-	i <- 0
+	Found = FALSE
+	i = 0
 	repeat {
-		i <- i+1
+		i = i+1
 		txt <- readLines(con,n=1)
-		if(!length(txt)) stop("ADF file empty")
-		Found <- TRUE
-		for(a in columns) Found <- Found && length(grep(a,txt))
-		if(Found) break
+		if(!length(txt))
+			stop("Failed to recognize ADF file format")
+		Found = TRUE
+		for(a in columns) 
+			Found = Found && length(grep(a,txt))
+		if(Found)
+			break
 	}
 	return(i-1)
 }
@@ -232,15 +273,11 @@ getPhenoDataPerAD<-function(ad,ph,dataFiles){
 	#Subselect data files for current ArrayDesign REF
 	selectFiles = phenoData[phenoData[arrayDesignRefCol]==ad,arrayDataCol]
 	
-	if(!all(selectFiles) %in% dataFiles){
+	
+	if(!all(selectFiles %in% dataFiles)){
 		stop("Some or all data files for ",ad," array are missing.")
 	}
 	
-#	if("Array.Data.Matrix.File" %in% colnames(pht))
-#		files = pht[pht$Array.Design.REF == adr[i],"Array.Data.Matrix.File"]
-#	if("Array.Data.File" %in% colnames(pht))
-#		files = pht[pht$Array.Design.REF == adr[i],"Array.Data.File"]
-#	
 	#subselect phenoData Frame for files 
 	ph = ph[phenoData[arrayDesignRefCol]==ad]
 	phenoData = pData(ph)
@@ -249,13 +286,15 @@ getPhenoDataPerAD<-function(ad,ph,dataFiles){
 }
 
 getDataFormat=function(path,files){
-	allcnames = scan(file.path(path,files[1]),what = "",nlines = 200, sep = "\t")
+	allcnames = scan(file.path(path,files[1]),what = "",nlines = 200, sep = "\t",quiet=TRUE)
 	for(sw in names(headers)){
 		allthere<-tolower(headers[[sw]]) %in% tolower(gsub("\\s","",allcnames))
 		if(all(allthere))
 			return(sw)
 	}
-	return(FALSE)
+	allcnames = scan(file.path(path,files[1]),what = "",nlines = 1, sep = "\n",quiet=TRUE)
+	stop("Unable to recognize data file format. First line:\n",allcnames)
+	
 }
 
 getDataColsForAE1 = function(path,files){
@@ -279,7 +318,7 @@ getDataColsForAE1 = function(path,files){
 	scanners = gsub(">","",scanners)
 	
 	## Parsing the first line of the expression file
-	allcnames = scan(file.path(path,files[1]),what = "",nlines = 1, sep = "\t")
+	allcnames = scan(file.path(path,files[1]),what = "",nlines = 1, sep = "\t",quiet=TRUE)
 	
 	## Looking for the right column to use
 	scanname = allcnames[grep(":",allcnames)]
@@ -287,27 +326,27 @@ getDataColsForAE1 = function(path,files){
 		scanname = scanname[-grep("Database|Reporter",scanname)] 
 	
 	##Feature is a problem because of Feature Extraction
-	feature = grep("Feature",scanname)
+	feature = grep("^Feature^",scanname)
 	fe = grep("Feature Extraction",scanname)
 	if(length(feature) != 0)
 		scanname = scanname[-feature[!feature %in% fe]]
 	
 	##Ready to read data
 	if(length(scanname) == 0) 
-		stop(sprintf("No scanner name is given. It is not possible to handle such a case. Try to set the argument 'rawcol' by choosing among the following columns names: \n") ,
+		stop(sprintf("No scanner name is given. It is not possible to handle such a case. Try to set the argument 'dataCols' by choosing among the following columns names: \n") ,
 				sprintf("\"%s\" \n",allcnames))
 	
 	##Image Analysis Program
 	st = unique(sapply(seq_len(length(scanname)), function(i) strsplit(scanname,":")[[i]][1]))     
 	
 	if(length(grep(st, scanners)) == 0)
-		stop(sprintf("Scanner name is '%s'. This scanner type is not valid. \nTry to set the argument 'rawcol' by choosing among the following columns names: \n", st),sprintf("\"%s\" \n",scanname))
+		stop(sprintf("Scanner name is '%s'. This scanner type is not valid. \nTry to set the argument 'dataCols' by choosing among the following columns names: \n", st),sprintf("\"%s\" \n",scanname))
 	
 	if(length(st) != 1)
-		stop(sprintf("%s scanner names are given ( ",length(st)), sprintf("\"%s\" ",st), sprintf("). It is not possible to handle such a case. Try to set the argument 'rawcol' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",scanname))
+		stop(sprintf("%s scanner names are given ( ",length(st)), sprintf("\"%s\" ",st), sprintf("). It is not possible to handle such a case. Try to set the argument 'dataCols' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",scanname))
 	
 	if(length(grep(st, scanners)) > 1)
-		stop(sprintf("Scanner name can be '%s'. \nTry to set the argument 'rawcol' by choosing among the following columns names: \n", scanners[grep(st, scanners)]),sprintf("\"%s\" \n",scanname))
+		stop(sprintf("Scanner name can be '%s'. \nTry to set the argument 'dataCols' by choosing among the following columns names: \n", scanners[grep(st, scanners)]),sprintf("\"%s\" \n",scanname))
 	
 	gs = qt[((sl[grep(st,scanners)]+1):(sl[grep(st,scanners)+1]-1)),] ## extract the QTs of the specific scanner type
 	foreground = gs[(gs[,4] == "MeasuredSignal" & (is.na(gs[,5]) | gs[,5] == 0)),c(1,7)] ## the colnames to use in the read.column
@@ -329,21 +368,21 @@ getDataColsForAE1 = function(path,files){
 			warning(sprintf("The files do not all have the same headings whereas the array design is the same. It may cause the object not being created."))
 	}
 	
-	## Building NChannelSet when two colours
+	#Two channel data
 	if(df[1] == 2){
 		rawcol = if(db[1] == 2) 
 					list(R = colnamesf[colnamesf[,2] == "Cy5",1], 
-							G = colnamesf[colnamesf[,2] == "Cy3",1],
-							Rb = colnamesb[colnamesb[,2] == "Cy5",1],
-							Gb = colnamesb[colnamesb[,2] == "Cy3",1]) 
-				else 
+						 G = colnamesf[colnamesf[,2] == "Cy3",1],
+						 Rb = colnamesb[colnamesb[,2] == "Cy5",1],
+						 Gb = colnamesb[colnamesb[,2] == "Cy3",1]) 
+				 else 
 					list(R = colnamesf[colnamesf[,2] == "Cy5",1], G = colnamesf[colnamesf[,2] == "Cy3",1])
 		
 		if(length(rawcol) == 0 || (0 %in% sapply(seq_len(length(rawcol)), function(i) length(rawcol[[i]]))))
 			stop(sprintf("The known column names for this scanner are not in the heading of the files.\nTry to set the argument 'rawcol' by choosing among the following columns names: \n"),
 					sprintf("\"%s\" \n",scanname))
 	}
-	## Building ExpressionSet when one colour
+	## one channel data
 	if(df[1] == 1){
 		rawcol = list(R = colnamesf[,1], G = colnamesf[,1])
 	}
@@ -357,17 +396,19 @@ getDataColsForAE1 = function(path,files){
 }
 
 ## assign phenoData to Nchannelset
-assign.pheno.ncs = function(ph,files,raweset){
+preparePhenoDataFor2channel = function(ph,files){
+	
+	labelCol = getSDRFcolumn("label",varLabels(ph))
+	if(length(unique(ph[[labelCol]])) < 2)
+		stop("ArrayExpress: Unable to attach pheno data. SDRF contains data for only one label, ",unique(ph[[labelCol]]))
+	
 	si = pData(ph)[1:(length(files)*2),]
 	lab = split(si,si[,"Label"])
 	arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))
 	
 	#Reorder rows in each group (Cy3,Cy5) to the same order
-#	seq<-with(lab[[1]],order(ArrayData.File))
 	lab[[1]] = lab[[1]][order(lab[[1]][,arrayDataCol]),]
 	lab[[2]] = lab[[2]][order(lab[[2]][,arrayDataCol]),]
-	
-	
 	
 	same = which(lapply(1:ncol(lab[[1]]), function(i) all(lab[[1]][i] == lab[[2]][i])) == TRUE)
 	all = lab[[1]][same]
@@ -380,32 +421,14 @@ assign.pheno.ncs = function(ph,files,raweset){
 	samples = new("AnnotatedDataFrame", data = cbind(all,gspe,rspe), varMetadata = metaData)
 	
 	arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(samples))	
-	rownames(pData(samples)) = gsub(".[a-z][a-z][a-z]$","",samples[[arrayDataCol]])
-	
-	if(nrow(samples) != length(sampleNames(raweset)))
-		warning("Number of data files read does not match available sample annotations")
-	
-	pData(samples) = pData(samples)[sampleNames(raweset),]
-	phenoData(raweset) = samples
-	return(raweset)
-}
+	rownames(pData(samples)) = gsub(".[a-z][a-z][a-z]$","",samples[[arrayDataCol]],ignore.case=T)
 
-prepPhenoDataFor2channel = function(ph,files,raweset){
-	si = pData(ph)[1:(length(files)*2),] # This is a cheat
-	lab = split(si,si[,"Label"])
-	same = which(lapply(1:ncol(lab[[1]]), function(i) all(lab[[1]][i] == lab[[2]][i])) == TRUE)
-	all = lab[[1]][same]
-	gspe = lab[[1]][-same]
-	colnames(gspe) = paste(colnames(gspe),names(lab)[1],sep = ".")
-	rspe = lab[[2]][-same]
-	colnames(rspe) = paste(colnames(rspe),names(lab)[2],sep = ".")
-	
-	metaData = data.frame(labelDescription = c(rep("_ALL_",ncol(all)),rep("G",ncol(gspe)),rep("R",ncol(rspe))))
-	
-	samples = new("AnnotatedDataFrame", data = cbind(all,gspe,rspe), varMetadata = metaData)
-	
-	rownames(pData(samples)) = gsub(".[a-z][a-z][a-z]$","",samples$Array.Data)
-	pData(samples) = pData(samples)[sampleNames(raweset),]
+#	if(nrow(samples) != length(sampleNames(raweset)))
+#		warning("Number of data files read does not match available sample annotations")
+#	
+#	samples = samples[sampleNames(raweset),]
+#	pData(samples) = pData(samples)[sampleNames(raweset),]
+#	phenoData(raweset) = samples
 	return(samples)
 }
 
@@ -413,9 +436,24 @@ getSDRFcolumn = function(col,headers){
 	pattern<-switch(col,
 			ArrayDataFile = "^Array[[:punct:]|[:blank:]]*Data[[:punct:]|[:blank:]]*File",
 			ArrayDesignREF = "^Array[[:punct:]|[:blank:]]*Design[[:punct:]|[:blank:]]*REF",
+			ArrayDataMatrixFile = "^Array[[:punct:]|[:blank:]]*Data[[:punct:]|[:blank:]]*Matrix[[:punct:]|[:blank:]]*File",
 			label = "^Label$")
 	colIndex = grep(pattern,headers,ignore.case = TRUE)
 	return(colIndex)
+}
+
+## remove all downloaded files
+cleanupAE = function(mageFiles){
+	path = mageFiles$path
+	
+	try(file.remove(file.path(path, mageFiles$rawFiles)))
+	try(file.remove(file.path(path, mageFiles$processedFiles)))
+	
+	try(file.remove(file.path(path, mageFiles$sdrf)))
+	try(file.remove(file.path(path, mageFiles$idf)))
+	try(file.remove(file.path(path, mageFiles$adf)))
+	try(file.remove(file.path(path, mageFiles$rawArchive)))
+	try(file.remove(file.path(path, mageFiles$processedArchive)))
 }
 
 

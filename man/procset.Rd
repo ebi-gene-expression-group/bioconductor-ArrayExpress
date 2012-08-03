@@ -23,8 +23,9 @@ procset(files, procol)
   \code{\link[ArrayExpress]{getAE}},
   \code{\link[ArrayExpress]{getcolproc}}} 
 \author{
-  Audrey Kauffmann 
-  Maintainer: <kauffmann@bergonie.org>  
+  Ibrahim Emam, Audrey Kauffmann 
+  
+  Maintainer: <iemam@ebi.ac.uk>  
 }
 \examples{
 # An example can be found in the help of the getAE function.

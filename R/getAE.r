@@ -6,13 +6,9 @@
 
 getAE = function (input, path = getwd(), type = "raw", extract = TRUE) {
 	baseURL = "http://www.ebi.ac.uk/arrayexpress/xml/v2/files"
-	#input="E-TABM-25"
 	xmlURL = paste(baseURL,input,sep="/")
 	xml = xmlTreeParse(xmlURL,useInternalNodes=TRUE)
 	
-	#node = getNodeSet(xml,"/files/experiment/file[kind='sdrf' and extension='txt']/url")
-	#sdrfURL = xmlSApply(node[[1]], xmlValue)
-	#sdrfName = getNodeSet(xml,"/files/experiment/file[kind='sdrf' and extension='txt']/name")
 	
 	sdrfURL = xpathSApply(xml,"/files/experiment/file[kind='sdrf' and extension='txt']/url", xmlValue)
 	sdrfName = xpathSApply(xml,"/files/experiment/file[kind='sdrf' and extension='txt']/name", xmlValue)
@@ -27,6 +23,20 @@ getAE = function (input, path = getwd(), type = "raw", extract = TRUE) {
 	procArchiveURL = xpathApply(xml,"/files/experiment/file[kind='fgem' and extension='zip']/url", xmlValue)
 	
 	#Download files
+	if(length(sdrfURL) > 1){
+		warning("Found two SDRF files: \n",paste(sdrfURL,"\n"))
+		hybSDRF = grep("hyb.sdrf",sdrfURL)
+		if(length(hybSDRF)>0){
+			message("Choosing ",sdrfURL[hybSDRF])
+			sdrfURL=sdrfURL[hybSDRF];
+			sdrfName=sdrfName[hybSDRF];
+		}
+		else{
+			warning("Unable to choose SDRF file. Please report experiment to miamexpress@ebi.ac.uk")
+		}
+			
+			
+	}
 	sdrffile = paste(path,sdrfName,sep="/")
 	sdrf = try(download.file(sdrfURL, sdrffile, mode="wb"))
 	
@@ -35,7 +45,8 @@ getAE = function (input, path = getwd(), type = "raw", extract = TRUE) {
 		warning(paste(sdrf, " does not exist or is empty. The object will not have featureData or phenoData. \n"),sep="")
 		sdrffile = NULL
 		adffile = NULL 
-	} else sdrffile = basename(sdrffile)
+	} else 
+		sdrffile = basename(sdrffile)
 	
 	idffile = paste(path,idfName,sep="/")
 	idf = try(download.file(idfURL, idffile, mode="wb"))
@@ -44,7 +55,8 @@ getAE = function (input, path = getwd(), type = "raw", extract = TRUE) {
 	if(inherits(idf, 'try-error') || file.info(idffile)$size == 0) {
 		warning(paste(idf, " does not exist or is empty. \n"),sep="")
 		idffile = NULL 
-	} else idffile = basename(idffile)
+	} else 
+		idffile = basename(idffile)
 	
 	
 	adffiles<-lapply(adfURL_list, function(adfURL){

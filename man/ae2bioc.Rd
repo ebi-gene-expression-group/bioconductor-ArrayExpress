@@ -1,38 +1,35 @@
-\name{magetab2bioc}
-\alias{magetab2bioc}
+\name{ae2bioc}
+\alias{ae2bioc}
 \docType{data}
 \title{ Convert MAGE-TAB files from raw data into a Bioconductor object }
 \description{
-  \code{magetab2bioc} converts local MAGE-TAB files into a AffyBatch, an
+  \code{ae2bioc} converts local MAGE-TAB files into a AffyBatch, an
   ExpressionSet or a NChannelSet.
 }
 \usage{
-magetab2bioc(files, rawcol = NULL, save = TRUE)
+ae2bioc(mageFiles, dataCols = NULL)
 }
 \arguments{
 
-  \item{files}{ A list as given from \code{\link[ArrayExpress]{getAE}}
+  \item{mageFiles}{ A list as given from \code{\link[ArrayExpress]{getAE}}
     function. Containing the following elements:
    \describe{
-   \item{rawfiles}{all the expression files to use to create the
+   \item{rawFiles}{all the expression files to use to create the
     object. The content of the raw.zip MAGE-TAB file.} 
     \item{sdrf}{the name of the sdrf file from MAGE-TAB.}
   \item{idf}{the name of the idf file from MAGE-TAB.}
     \item{adf}{the name of the adf file from MAGE-TAB.}
     \item{path}{is the name of the directory containing these files.}}}
 
-  \item{rawcol}{by default, the columns are automatically selected
+  \item{dataCols}{by default, the columns are automatically selected
     according to the scanner type. If the scanner is unknown or if the
     user wants to use different columns than the default, the argument
-    'rawcol' can be set. For two colour arrays it must be a list with
+    'dataCols' can be set. For two colour arrays it must be a list with
     the fields 'R', 'G', 'Rb' and 'Gb' giving the column names to be
     used for red and green foreground and background. For one colour
     arrays, it must be a character string with the column name to be
     used. These column names must correspond to existing column names of
     the expression files.}
-
-   \item{save}{ if TRUE, the files used to create the object will not be
-   deleted from path after executing the function.} 
  
 }
 
@@ -52,8 +49,9 @@ magetab2bioc(files, rawcol = NULL, save = TRUE)
   \code{\link[ArrayExpress]{queryAE}},
   \code{\link[ArrayExpress]{getAE}}}
 \author{
-  Audrey Kauffmann 
-  Maintainer: <kauffmann@bergonie.org>  
+  Ibrahim Emam
+  
+  Maintainer: <iemam@ebi.ac.uk>  
 }
 \examples{
 # An example can be found in the help of the getAE function.

@@ -11,12 +11,10 @@
   \code{ArrayExpress} needs an Internet connection.
 }
 \usage{
-ArrayExpress(input, path = getwd(), save = FALSE, dataCols = NULL)
+ArrayExpress(accession, path = getwd(), save = FALSE, dataCols = NULL)
 }
 \arguments{
-  \item{input}{ an ArrayExpress identifier.
-    The function currently covers 96\% of the raw data sets of the
-    database.}
+  \item{accession}{ an ArrayExpress experiment identifier.}
   \item{path}{ the name of the directory in which the files
     downloaded on the ArrayExpress repository will be extracted. The
     default is the current directory.}
@@ -57,7 +55,7 @@ ArrayExpress(input, path = getwd(), save = FALSE, dataCols = NULL)
   Maintainer: <iemam@ebi.ac.uk>  
 }
 \examples{
-ETABM25.affybatch = ArrayExpress(input = "E-TABM-25")
+ETABM25.affybatch = ArrayExpress("E-TABM-25")
 print(ETABM25.affybatch)
 sampleNames(ETABM25.affybatch)
 colnames(pData(ETABM25.affybatch))

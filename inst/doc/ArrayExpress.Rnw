@@ -55,7 +55,7 @@ For a more extended querying mode, the ArrayExpress website offers an advanced q
 \subsection{Call of the function ArrayExpress}
 Once you know which identifier you wish to retrieve, the function \Rfunction{ArrayExpress} can be called, using the following arguments:
 \begin{itemize}
-\item \emph{input}: an ArrayExpress identifier for which the raw data are available.
+\item \emph{accession}: an ArrayExpress experiment identifier for which the raw data are available.
 \item \emph{path}: the name of the directory in which the files
     downloaded from the ArrayExpress repository will be extracted. The
     default is the current directory.

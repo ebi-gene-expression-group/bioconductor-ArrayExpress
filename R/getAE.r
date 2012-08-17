@@ -4,150 +4,195 @@
 ###############################################################################
 
 
-getAE = function (input, path = getwd(), type = "raw", extract = TRUE) {
-	baseURL = "http://www.ebi.ac.uk/arrayexpress/xml/v2/files"
-	xmlURL = paste(baseURL,input,sep="/")
-	xml = xmlTreeParse(xmlURL,useInternalNodes=TRUE)
+getAE = function (accession, path = getwd(), type = "full", extract = TRUE, local = FALSE, sourcedir=path) {
 	
+	if(!local){
+		baseURL = "http://www.ebi.ac.uk/arrayexpress/xml/v2/files"
+		xmlURL = paste(baseURL,accession,sep="/")
+		xml = xmlTreeParse(xmlURL,useInternalNodes=TRUE)
+		
+		sdrfURL = xpathSApply(xml,"/files/experiment/file[kind='sdrf' and extension='txt']/url", xmlValue)
+		sdrfFile = xpathSApply(xml,"/files/experiment/file[kind='sdrf' and extension='txt']/name", xmlValue)
+		
+		idfURL = xpathSApply(xml,"/files/experiment/file[kind='idf' and extension='txt']/url", xmlValue)
+		idfFile = xpathSApply(xml,"/files/experiment/file[kind='idf' and extension='txt']/name", xmlValue)
+		
+		adfURL = xpathApply(xml,"/files/experiment/file[kind='adf' and extension='txt']/url", xmlValue)
+		adfName_list = xpathApply(xml,"/files/experiment/file[kind='adf' and extension='txt']/name", xmlValue)
+		
+		rawArchiveURL = xpathApply(xml,"/files/experiment/file[kind='raw' and extension='zip']/url", xmlValue)
+		procArchiveURL = xpathApply(xml,"/files/experiment/file[kind='fgem' and extension='zip']/url", xmlValue)
+		
+	}else{
+		
+		allfiles = list.files(sourcedir)
+		
+		#SDRF
+		sdrfFile = allfiles[grep(paste(accession,".sdrf.txt",sep=""),allfiles)]
+		if(length(sdrfFile)==0)
+			stop("SDRF file not found in directory ",sourcedir)
+		sdrfURL=paste("file:/",sourcedir,sdrfFile,sep="/")
+		
+		#IDF
+		idfFile = allfiles[grep(paste(accession,".idf.txt",sep=""),allfiles)]
+		if(length(idfFile)==0)
+			warning("IDF file not found in directory ",sourcedir)
+		idfURL=paste("file:/",sourcedir,idfFile,sep="/")
+		
+		#ADF
+		ph = try(read.AnnotatedDataFrame(sdrfFile, path = sourcedir, row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
+		if(inherits(ph,'try-error')){
+			warning("Unable to retrieve ADF reference from SDRF. Reading any ADF in directory.")
+			adfFiles = allfiles[grep(".adf.txt",allfiles)]
+		}
+		else{
+			adr = unique(pData(ph)[,getSDRFcolumn("ArrayDesignREF",varLabels(ph))])
+			adfFiles = paste(adr,".adf.txt",sep="");
+		}
+			
+		if(all(file.exists(file.path(sourcedir,adfFiles)))){
+			adfURL = paste("file:/",sourcedir,adfFiles,sep="/")
+			downloadADF = FALSE
+		}
+			
+		else{
+			#ADF not found in local directory. Attempt to retrieve it from FTP
+			filesURL="http://www.ebi.ac.uk/arrayexpress/files";
+			adfURL = paste(filesURL,adr,adfFiles,sep="/");
+			downloadADF = TRUE
+		}
+			
+			
+		#RAW files
+		rawArchive = allfiles[grep(paste(accession,".raw.[0-9]{1,}.zip",sep=""),allfiles)]
+		if(length(rawArchive)==0 & type == "raw")
+			stop("No raw files found in directory ",sourcedir)
+		rawArchiveURL = paste("file:/",sourcedir,rawArchive,sep="/")
+		
+		#Processed files
+		processedArchive = allfiles[grep(paste(accession,".processed.[0-9]{1,}.zip",sep=""),allfiles)]
+		if(length(processedArchive)==0 & type == "processed"){
+			stop("No processed data files found in directory ", sourcedir)
+			procArchiveURL = NULL
+		}
+		else{
+			procArchiveURL = paste("file:/",sourcedir,processedArchive,sep="/")
+		}
+	}
 	
-	sdrfURL = xpathSApply(xml,"/files/experiment/file[kind='sdrf' and extension='txt']/url", xmlValue)
-	sdrfName = xpathSApply(xml,"/files/experiment/file[kind='sdrf' and extension='txt']/name", xmlValue)
-	
-	idfURL = xpathSApply(xml,"/files/experiment/file[kind='idf' and extension='txt']/url", xmlValue)
-	idfName = xpathSApply(xml,"/files/experiment/file[kind='idf' and extension='txt']/name", xmlValue)
-	
-	adfURL_list = xpathApply(xml,"/files/experiment/file[kind='adf' and extension='txt']/url", xmlValue)
-	adfName_list = xpathApply(xml,"/files/experiment/file[kind='adf' and extension='txt']/name", xmlValue)
-	
-	rawArchiveURL = xpathApply(xml,"/files/experiment/file[kind='raw' and extension='zip']/url", xmlValue)
-	procArchiveURL = xpathApply(xml,"/files/experiment/file[kind='fgem' and extension='zip']/url", xmlValue)
-	
-	#Download files
+	#a temporary solution for old GEO imports with seq and array files
 	if(length(sdrfURL) > 1){
 		warning("Found two SDRF files: \n",paste(sdrfURL,"\n"))
 		hybSDRF = grep("hyb.sdrf",sdrfURL)
 		if(length(hybSDRF)>0){
 			message("Choosing ",sdrfURL[hybSDRF])
 			sdrfURL=sdrfURL[hybSDRF];
-			sdrfName=sdrfName[hybSDRF];
+			sdrfFile=sdrfFile[hybSDRF];
 		}
 		else{
 			warning("Unable to choose SDRF file. Please report experiment to miamexpress@ebi.ac.uk")
 		}
-			
-			
 	}
-	sdrffile = paste(path,sdrfName,sep="/")
-	sdrf = try(download.file(sdrfURL, sdrffile, mode="wb"))
-	
-	## Download sdrf checking
-	if(inherits(sdrf, 'try-error') || file.info(sdrffile)$size == 0) {
-		warning(paste(sdrf, " does not exist or is empty. The object will not have featureData or phenoData. \n"),sep="")
-		sdrffile = NULL
-		adffile = NULL 
-	} else 
-		sdrffile = basename(sdrffile)
-	
-	idffile = paste(path,idfName,sep="/")
-	idf = try(download.file(idfURL, idffile, mode="wb"))
-	
-	## Download idf checking
-	if(inherits(idf, 'try-error') || file.info(idffile)$size == 0) {
-		warning(paste(idf, " does not exist or is empty. \n"),sep="")
-		idffile = NULL 
-	} else 
-		idffile = basename(idffile)
 	
 	
-	adffiles<-lapply(adfURL_list, function(adfURL){
-				filedest = paste(path,basename(adfURL),sep="/")
-				dnld = try(download.file(adfURL, filedest, mode="wb"))
-				
-				## Download adf checking
-				if(inherits(dnld, 'try-error') || file.info(filedest)$size == 0) {
-					warning(paste(adfURL, " does not exist or is empty. \n"),sep="")
-					adffile = NULL } 
-				else {	
-					adffile = basename(filedest)
-				}
-				return(adffile);
-			})
-	
-	if(!is.null(adffiles))
-		adffiles = unlist(adffiles)
-	
-	## Download data files
-	rawArchive = NULL
-	processedArchive = NULL
-	
-	if(!is.null(rawArchiveURL) && (type == "full" || type == "raw")){
-		##RAW DATA######################
-		## Saving temporarily the raw data
-		message("Downloading raw data files\n")
-		rawArchive<-lapply(rawArchiveURL, function(url){
+	#Download/copy files to working directory specified by 'path'
+	if(!local || path!=sourcedir || downloadADF){
+		#Download/copy ADF
+		adfFiles<-lapply(adfURL, function(url){
 					filedest = paste(path,basename(url),sep="/")
 					dnld = try(download.file(url, filedest, mode="wb"))
-					
-					## Download raw.x.zip checking
 					if(inherits(dnld, 'try-error') || file.info(filedest)$size == 0) {
 						warning(paste(url, " does not exist or is empty. \n"),sep="")
-						#rawfiles = NULL
-					} else  {
-						return (filedest)
-						#rawfiles = rbind(rawdata)
-						#uz = try(rawfiles = unzip(filedest)) 
-					}
-					
+						adffile = NULL} 
+					else{	
+						adffile = basename(filedest)}
+					return(adffile);
 				})
-		if(!is.null(rawArchive)){
-			rawArchive = unlist(rawArchive)
-			rawArchive = basename(rawArchive)
-		}
-			
+		if(!is.null(adfFiles))
+			adfFiles = unlist(adfFiles)
 	}
-
-	if((type == "full" || type == "processed") && !is.null(procArchiveURL)){
-		##PROCESSED DATA######################
-		## Saving temporarily the processed data
-		message("Downloading processed data files\n")
-		processedArchive<-lapply(procArchiveURL, function(url){
-					filedest = paste(path,basename(url),sep="/")
-					dnld = try(download.file(url, filedest, mode="wb"))
-					
-					## Download processed.x.zip checking
-					if(inherits(dnld, 'try-error') || file.info(filedest)$size == 0) {
-						warning(paste(url, " does not exist or is empty. \n"),sep="")
-						#procfiles = NULL
-						#return(NULL)
-					} else  {
-						return(filedest)
-#						cat("Extracting zip file\n")
-#						procdata = extract.zip(file = filedest)
-						#procfiles = rbind(procdata)
-						#uz = try(rawfiles = unzip(filedest)) 
-					}
-					
-				})
-		if(!is.null(processedArchive)){
-			processedArchive = unlist(processedArchive)
-			processedArchive = basename(processedArchive)
+		
+	if(!local || path!=sourcedir){
+		#Download/copy SDRF
+		sdrfFileDest = paste(path,sdrfFile,sep="/")
+		dnld = try(download.file(sdrfURL, sdrfFileDest, mode="wb"))
+		if(inherits(dnld, 'try-error') || file.info(sdrfFileDest)$size == 0) {
+			warning(paste(sdrfFile, " does not exist or is empty. The object will not have featureData or phenoData. \n"),sep="")
+			sdrfFile = NULL
+			adffile = NULL 
 		}
 		
+		#Download/copy IDF
+		idfFileDest = paste(path,idfFile,sep="/")
+		dnld = try(download.file(idfURL, idfFileDest, mode="wb"))
+		if(inherits(dnld, 'try-error') || file.info(idfFileDest)$size == 0) {
+			warning(paste(idfFile, " does not exist or is empty. \n"),sep="")
+			idfFile = NULL 
+		}
+		
+		
+		## Download data files
+		rawArchive = NULL
+		processedArchive = NULL
+		
+		##RAW DATA
+		if(!is.null(rawArchiveURL) && (type == "full" || type == "raw")){
+			message("Copying raw data files\n")
+			rawArchive<-lapply(rawArchiveURL, function(url){
+						filedest = paste(path,basename(url),sep="/")
+						dnld = try(download.file(url, filedest, mode="wb"))
+						
+						## Download raw.x.zip checking
+						if(inherits(dnld, 'try-error') || file.info(filedest)$size == 0) {
+							warning(paste(url, " does not exist or is empty. \n"),sep="")
+						} else  {
+							return (filedest)
+						}
+						
+					})
+			if(!is.null(rawArchive)){
+				rawArchive = unlist(rawArchive)
+				rawArchive = basename(rawArchive)
+			}
+			
+		}
+		
+		##PROCESSED DATA
+		if((type == "full" || type == "processed") && !is.null(procArchiveURL)){
+			message("Copying processed data files\n")
+			processedArchive<-lapply(procArchiveURL, function(url){
+						filedest = paste(path,basename(url),sep="/")
+						dnld = try(download.file(url, filedest, mode="wb"))
+						
+						## Download processed.x.zip checking
+						if(inherits(dnld, 'try-error') || file.info(filedest)$size == 0) {
+							warning(paste(url, " does not exist or is empty. \n"),sep="")
+						} else  {
+							return(filedest)
+						}
+						
+					})
+			if(!is.null(processedArchive)){
+				processedArchive = unlist(processedArchive)
+				processedArchive = basename(processedArchive)
+			}
+		}	
 	}
+		
 	
 	rawFiles = NULL
 	processedFiles = NULL
 	
 	if(extract){
-		message("Unzipping files")
+		message("Unpacking data files")
 		if(!is.null(rawArchive))
 			rawFiles<-lapply(rawArchive, function(zipfile){
-						rawfiles = extract.zip(file = zipfile)
+						rawfiles = extract.zip(file = paste(path, zipfile, sep="/"))
 						return(rawfiles)
 					})
 		if(!is.null(processedArchive))
 			processedFiles<-lapply(processedArchive, function(zipfile){
-					procfiles = extract.zip(file = zipfile)
+					procfiles = extract.zip(file = paste(path, zipfile, sep="/"))
 					return(procfiles)
 				})
 	
@@ -162,9 +207,8 @@ getAE = function (input, path = getwd(), type = "raw", extract = TRUE) {
 			rawArchive = rawArchive,
 			processedFiles = processedFiles,
 			processedArchive = processedArchive,
-			sdrf = sdrffile, 
-			idf = idffile, 
-			adf = adffiles)
+			sdrf = sdrfFile, 
+			idf = idfFile, 
+			adf = adfFiles)
 	return(res)
 }
-

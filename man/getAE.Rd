@@ -7,16 +7,18 @@
   ArrayExpress dataset.
 }
 \usage{
-getAE(input, path = getwd(), type = "raw", extract = TRUE)
+getAE(accession, path = getwd(), type = "full", extract = TRUE, local = FALSE, sourcedir = path)
 }
 \arguments{
-  \item{input}{ is an ArrayExpress identifier. }
+  \item{accession}{ is an ArrayExpress experiment identifier. }
   \item{path}{ is the name of the directory in which the files
     downloaded on the ArrayExpress repository will be extracted.} 
   \item{type}{ can be 'raw' to download and extract only the raw data,
     'processed' to download and extract only the processed data or
     'full' to have both raw and processed data.}
   \item{extract}{ if FALSE, the files are not extracted from the zip archive.}
+  \item{local}{ if TRUE, files will be read from a local folder specified by sourcedir.}
+  \item{sourcedir}{ when local = TRUE, files will be read from this directory.}
 }
 \value{
   \code{ A list with the names of the files that

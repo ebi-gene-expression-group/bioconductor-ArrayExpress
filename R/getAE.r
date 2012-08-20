@@ -28,13 +28,13 @@ getAE = function (accession, path = getwd(), type = "full", extract = TRUE, loca
 		allfiles = list.files(sourcedir)
 		
 		#SDRF
-		sdrfFile = allfiles[grep(paste(accession,".sdrf.txt",sep=""),allfiles)]
+		sdrfFile = allfiles[grep(paste(accession,".sdrf.txt$",sep=""),allfiles)]
 		if(length(sdrfFile)==0)
 			stop("SDRF file not found in directory ",sourcedir)
 		sdrfURL=paste("file:/",sourcedir,sdrfFile,sep="/")
 		
 		#IDF
-		idfFile = allfiles[grep(paste(accession,".idf.txt",sep=""),allfiles)]
+		idfFile = allfiles[grep(paste(accession,".idf.txt$",sep=""),allfiles)]
 		if(length(idfFile)==0)
 			warning("IDF file not found in directory ",sourcedir)
 		idfURL=paste("file:/",sourcedir,idfFile,sep="/")
@@ -43,7 +43,7 @@ getAE = function (accession, path = getwd(), type = "full", extract = TRUE, loca
 		ph = try(read.AnnotatedDataFrame(sdrfFile, path = sourcedir, row.names=NULL, blank.lines.skip = TRUE, fill=TRUE, varMetadata.char="$"))
 		if(inherits(ph,'try-error')){
 			warning("Unable to retrieve ADF reference from SDRF. Reading any ADF in directory.")
-			adfFiles = allfiles[grep(".adf.txt",allfiles)]
+			adfFiles = allfiles[grep(".adf.txt$",allfiles)]
 		}
 		else{
 			adr = unique(pData(ph)[,getSDRFcolumn("ArrayDesignREF",varLabels(ph))])
@@ -63,21 +63,23 @@ getAE = function (accession, path = getwd(), type = "full", extract = TRUE, loca
 		}
 			
 			
+		
+		rawArchiveURL = NULL
+		procArchiveURL = NULL
 		#RAW files
 		rawArchive = allfiles[grep(paste(accession,".raw.[0-9]{1,}.zip",sep=""),allfiles)]
-		if(length(rawArchive)==0 & type == "raw")
-			stop("No raw files found in directory ",sourcedir)
-		rawArchiveURL = paste("file:/",sourcedir,rawArchive,sep="/")
+		if(length(rawArchive)!=0)
+			rawArchiveURL = paste("file:/",sourcedir,rawArchive,sep="/")
+		else
+			warning("No raw files found in directory ",sourcedir)
+		
 		
 		#Processed files
 		processedArchive = allfiles[grep(paste(accession,".processed.[0-9]{1,}.zip",sep=""),allfiles)]
-		if(length(processedArchive)==0 & type == "processed"){
-			stop("No processed data files found in directory ", sourcedir)
-			procArchiveURL = NULL
-		}
-		else{
+		if(length(processedArchive)!=0)
 			procArchiveURL = paste("file:/",sourcedir,processedArchive,sep="/")
-		}
+		else
+			warning("No processed data files found in directory ", sourcedir)
 	}
 	
 	#a temporary solution for old GEO imports with seq and array files

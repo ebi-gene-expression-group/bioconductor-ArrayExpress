@@ -50,15 +50,8 @@ queryAE = function(keywords = NULL, species = NULL){
 	
 	baseURL = "http://www.ebi.ac.uk/arrayexpress/xml/v2/experiments";
     
-	if(!is.null(keywords)){
-        qr = paste(baseURL,"?keywords=",keywords,sep="")
-        if(!is.null(species))
-          qr = paste(qr,"&species=",species,sep="")
-    }
-    
-	if(is.null(keywords) && !is.null(species))
-      qr = paste(baseURL,"?species=",species,sep="")
-    
+	qr = paste(baseURL,"?keywords=",keywords,"&species=",species,sep="")
+  	qr=URLencode(qr)
     queryfilename = paste("query",keywords,species,".xml",sep="")
     query = try(download.file(qr, queryfilename, mode="wb"))
     

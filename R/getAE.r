@@ -18,7 +18,7 @@ getAE = function (accession, path = getwd(), type = "full", extract = TRUE, loca
 		idfFile = xpathSApply(xml,"/files/experiment/file[kind='idf' and extension='txt']/name", xmlValue)
 		
 		adfURL = xpathApply(xml,"/files/experiment/file[kind='adf' and extension='txt']/url", xmlValue)
-		adfName_list = xpathApply(xml,"/files/experiment/file[kind='adf' and extension='txt']/name", xmlValue)
+		adfFiles = xpathApply(xml,"/files/experiment/file[kind='adf' and extension='txt']/name", xmlValue)
 		
 		rawArchiveURL = xpathApply(xml,"/files/experiment/file[kind='raw' and extension='zip']/url", xmlValue)
 		procArchiveURL = xpathApply(xml,"/files/experiment/file[kind='fgem' and extension='zip']/url", xmlValue)
@@ -138,7 +138,7 @@ getAE = function (accession, path = getwd(), type = "full", extract = TRUE, loca
 		processedArchive = NULL
 		
 		##RAW DATA
-		if(!is.null(rawArchiveURL) && (type == "full" || type == "raw")){
+		if(type!="mageFilesOnly" && !is.null(rawArchiveURL) && (type == "full" || type == "raw")){
 			message("Copying raw data files\n")
 			rawArchive<-lapply(rawArchiveURL, function(url){
 						filedest = paste(path,basename(url),sep="/")
@@ -160,7 +160,7 @@ getAE = function (accession, path = getwd(), type = "full", extract = TRUE, loca
 		}
 		
 		##PROCESSED DATA
-		if((type == "full" || type == "processed") && !is.null(procArchiveURL)){
+		if((type!="mageFilesOnly" && type == "full" || type == "processed") && !is.null(procArchiveURL)){
 			message("Copying processed data files\n")
 			processedArchive<-lapply(procArchiveURL, function(url){
 						filedest = paste(path,basename(url),sep="/")

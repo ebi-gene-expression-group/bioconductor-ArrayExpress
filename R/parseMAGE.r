@@ -160,12 +160,7 @@ readFeatures<-function(adf,path,procADFref=NULL){
 		}
 	}
 	
-#	if("Reporter.Identifier" %in% colnames(features))
-#		featurenames = features[,"Reporter.Identifier"]
-#	if("Composite.Element.Name" %in% colnames(features))
-#		featurenames = features[,"Composite.Element.Name"]
-#	if("Reporter.Name" %in% colnames(features))
-#		featurenames = features[,"Reporter.Name"]
+
 	
 	if(!is.null(procADFref)){
 		if(procADFref %in% colnames(features))
@@ -437,7 +432,8 @@ getSDRFcolumn = function(col,headers){
 			ArrayDataFile = "^Array[[:punct:]|[:blank:]]*Data[[:punct:]|[:blank:]]*File",
 			ArrayDesignREF = "^Array[[:punct:]|[:blank:]]*Design[[:punct:]|[:blank:]]*REF",
 			ArrayDataMatrixFile = "^Array[[:punct:]|[:blank:]]*Data[[:punct:]|[:blank:]]*Matrix[[:punct:]|[:blank:]]*File",
-			label = "^Label$")
+			label = "^Label$",
+			factorValues = "^Factor[[:punct:]|[:blank:]]*Value")
 	colIndex = grep(pattern,headers,ignore.case = TRUE)
 	return(colIndex)
 }

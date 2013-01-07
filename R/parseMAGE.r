@@ -27,6 +27,12 @@ headers<-list(
 #add illumina
 )
 
+isOneChannel = function(sdrf,path){
+	ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$", quote="\""))
+	labelCol = getSDRFcolumn("label",varLabels(ph))
+	return(length(unique(tolower(ph[[labelCol]])))==1)
+}
+
 readPhenoData = function(sdrf,path){
 	
 	message("ArrayExpress: Reading pheno data from SDRF")
@@ -53,18 +59,22 @@ readPhenoData = function(sdrf,path){
 	}
 	
 	
-	if(length(arrayDataCol)!=0 & length(unique(ph[[labelCol]]))==1)
+	if(length(arrayDataCol)!=0 & length(unique(tolower(ph[[labelCol]])))==1)
 		#set rownames of phenoData annotated data frame to array data files			
 		rownames(pData(ph)) = gsub(".[a-z][a-z][a-z]$","",ph[[arrayDataCol]],ignore.case=T)
 	
 	
 	#treat SDRF for two channel experiments
-	if(length(unique(ph[[labelCol]]))==2){
+	if(length(unique(tolower(ph[[labelCol]])))==2){
 		
 		arrayFilesNum = length(unique(ph[[arrayDataCol]]))
 		
 		si = pData(ph)[1:(arrayFilesNum*2),]
 		lab = split(si,si[,"Label"])
+		
+		if(nrow(lab[[1]]) != nrow(lab[[2]])){
+			stop("Number of CY3/CY5 is not equal")
+		}
 		
 		#Reorder rows in each group (Cy3,Cy5) to the same order
 		lab[[1]] = lab[[1]][order(lab[[1]][,arrayDataCol]),]
@@ -90,19 +100,12 @@ readPhenoData = function(sdrf,path){
 	return(ph)
 }
 
-readAEdata = function(path,files,dataCols,...){
+readAEdata = function(path,files,dataCols,green.only){
 	
 	message("ArrayExpress: Reading data files")
-	if(length(grep(".cel",files, ignore.case = TRUE)) == length(files)){
-		#Affy experiments
-		rawdata = try(ReadAffy(filenames = file.path(path,unique(files)))) 
-		if(inherits(rawdata, 'try-error')){
-			stop("Unable to read Affy CEL files in ",path)
-		}
-	}else{
-		source = getDataFormat(path,files)
-		
-		#process extra arguments passed to read.maimages
+	source = getDataFormat(path,files)
+
+#process extra arguments passed to read.maimages
 #		if (!is.null(dataCols)) {
 #		if (length(rawcol) > 1 && !is(rawcol, "list")) 
 #			stop("The argument 'rawcol' must be a list if multiple column name are given.")
@@ -111,36 +114,52 @@ readAEdata = function(path,files,dataCols,...){
 #		if (is(rawcol, "list") && !("R" %in% names(rawcol) && "G" %in% names(rawcol))) 
 #			stop("The names of the columns must contain R and G.")
 #	}
-		
-		
-		#Old AE1 formatted data files
-		if(source=="ae1"){
-			if (is.null(dataCols))
-				dataCols= getDataColsForAE1(path,files)
-			rawdata = read.maimages(files=files,path=path,source="generic",columns=dataCols,annotation=headers$ae1)
-			rawdata$source="ae1"
+	
+	if(source == "affy"){
+		rawdata = try(ReadAffy(filenames = file.path(path,unique(files))))
+		if(inherits(rawdata, 'try-error')){
+			stop("Unable to read cel files in",path)
 		}
+		return(rawdata)
 		
-		else if(source %in% c("agilent","arrayvision","bluefuse","genepix","bluefuse","imagene","quantarray")){
-			#data format can be directly read by limma
-			rawdata = read.maimages(files=files,path=path,source=source)
-		}else
-			# TODO: add more formats
-			stop()
+	}else if(source=="ae1"){
+		#Old AE1 formatted data files
+		if (is.null(dataCols)){
+			dataCols= try(getDataColsForAE1(path,files))
+			if(inherits(dataCols,'try-error')) return()
+		}
+		rawdata = try(read.maimages(files=files,path=path,source="generic",columns=dataCols,annotation=headers$ae1))
+		if(!inherits(rawdata, 'try-error')) rawdata$source="ae1"
+
+	}else if(source %in% c("agilent","arrayvision","bluefuse","genepix","bluefuse","imagene","quantarray")){
+		#data format can be directly read by limma
+		rawdata = try(read.maimages(files=files,path=path,source=source,columns=dataCols,green.only=green.only))
 		
-		#reorder rows of RGList to reflect the same order in ADF as Block Row/Block Column/Row/Column
-		if(is.null(rawdata$genes))
-			stop("Unable to read probe annotation from RGList")
-		if(is.null(rawdata$source))
-			stop("Unable to read source from RGList")
+	}else if(!is.null(dataCols) && source=="unknown"){
+		#read generic source given columns specified by user
+		rawdata = try(read.maimages(files=files,path=path,source="generic",columns=dataCols,green.only=green.only))
 		
-		rawdata<-switch(source,
-				agilent = rawdata<-rawdata[with(rawdata$genes,order(Row,Col)),],
-				genepix = rawdata<-rawdata[with(rawdata$genes,order(Block,Row,Column)),],
-				ae1 = rawdata<-rawdata[with(rawdata$genes,order(metaRow,metaColumn,row,column)),],
-				rawdata)
-		#if generic user has to specify feature columns in data
+	}else
+		# TODO: add more formats (illumina)
+		stop("Unable to recognize data file format")
+		
+	if(inherits(rawdata, 'try-error')){
+		stop("Unable to read data files in",path)
 	}
+	
+	#reorder rows of RGList to reflect the same order in ADF as Block Row/Block Column/Row/Column
+	if(is.null(rawdata$genes))
+		stop("Unable to read probe annotation from RGList")
+	if(is.null(rawdata$source))
+		stop("Unable to read source from RGList")
+	
+	rawdata<-switch(source,
+			agilent = rawdata<-rawdata[with(rawdata$genes,order(Row,Col)),],
+			genepix = rawdata<-rawdata[with(rawdata$genes,order(Block,Row,Column)),],
+			ae1 = rawdata<-rawdata[with(rawdata$genes,order(metaRow,metaColumn,row,column)),],
+			rawdata)
+	#if generic user has to specify feature columns in data
+	
 	
 	return(rawdata)
 }
@@ -245,7 +264,8 @@ skipADFheader<-function(adf,path,proc=F){
 		Found = TRUE
 		for(a in columns) 
 			Found = Found && length(grep(a,txt))
-		if(Found)
+		Found2 = length(grep("^Reporter Name",txt,ignore.case=TRUE))
+		if(Found || Found2)
 			break
 	}
 	return(i-1)
@@ -281,14 +301,35 @@ getPhenoDataPerAD<-function(ad,ph,dataFiles){
 }
 
 getDataFormat=function(path,files){
-	allcnames = scan(file.path(path,files[1]),what = "",nlines = 200, sep = "\t",quiet=TRUE)
-	for(sw in names(headers)){
-		allthere<-tolower(headers[[sw]]) %in% tolower(gsub("\\s","",allcnames))
-		if(all(allthere))
-			return(sw)
+	
+	if(length(grep(".cel",files, ignore.case = TRUE)) == length(files)){
+		return("affy")
 	}
+	else{
+		#Retrieve Column names from first data file
+		allcnames = scan(file.path(path,files[1]),what = "",nlines = 200, sep = "\t",quiet=TRUE)
+		allcnamesL = try(tolower(gsub("^\\s","",allcnames)),silent=TRUE)
+		if(inherits(allcnamesL, 'try-error')){
+			allcnames = scan(file.path(path,files[1]),what = "",nlines = 200, sep = "\t",quiet=TRUE,encoding="latin1")
+			allcnamesL = try(tolower(gsub("^\\s","",allcnames)))
+			if(inherits(allcnamesL, 'try-error')){
+				allcnamesL = allcnames
+			}
+		}
+		
+		#Find source of data
+		for(source in names(headers)){
+			allthere<-tolower(headers[[source]]) %in% allcnamesL
+			if(all(allthere))
+				return(source)
+		}
+	}
+
+	#Unable to detect source
 	allcnames = scan(file.path(path,files[1]),what = "",nlines = 1, sep = "\n",quiet=TRUE)
-	stop("Unable to recognize data file format. First line:\n",allcnames)
+	return("unknown")
+	
+	#stop("Unable to recognize data file format. First line:\n",allcnames)
 	
 }
 
@@ -392,39 +433,35 @@ getDataColsForAE1 = function(path,files){
 
 ## assign phenoData to Nchannelset
 preparePhenoDataFor2channel = function(ph,files){
-	
-	labelCol = getSDRFcolumn("label",varLabels(ph))
-	if(length(unique(ph[[labelCol]])) < 2)
-		stop("ArrayExpress: Unable to attach pheno data. SDRF contains data for only one label, ",unique(ph[[labelCol]]))
-	
-	si = pData(ph)[1:(length(files)*2),]
-	lab = split(si,si[,"Label"])
-	arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))
-	
-	#Reorder rows in each group (Cy3,Cy5) to the same order
-	lab[[1]] = lab[[1]][order(lab[[1]][,arrayDataCol]),]
-	lab[[2]] = lab[[2]][order(lab[[2]][,arrayDataCol]),]
-	
-	same = which(lapply(1:ncol(lab[[1]]), function(i) all(lab[[1]][i] == lab[[2]][i])) == TRUE)
-	all = lab[[1]][same]
-	gspe = lab[[1]][-same]
-	colnames(gspe) = paste(colnames(gspe),names(lab)[1],sep = ".")
-	rspe = lab[[2]][-same]
-	colnames(rspe) = paste(colnames(rspe),names(lab)[2],sep = ".")
-	
-	metaData = data.frame(labelDescription = c(rep("_ALL_",ncol(all)),rep("G",ncol(gspe)),rep("R",ncol(rspe))))
-	samples = new("AnnotatedDataFrame", data = cbind(all,gspe,rspe), varMetadata = metaData)
-	
-	arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(samples))	
-	rownames(pData(samples)) = gsub(".[a-z][a-z][a-z]$","",samples[[arrayDataCol]],ignore.case=T)
-
-#	if(nrow(samples) != length(sampleNames(raweset)))
-#		warning("Number of data files read does not match available sample annotations")
-#	
-#	samples = samples[sampleNames(raweset),]
-#	pData(samples) = pData(samples)[sampleNames(raweset),]
-#	phenoData(raweset) = samples
-	return(samples)
+	#if(length(unique(tolower(ph[[labelCol]])))==2){
+		
+		arrayFilesNum = length(unique(ph[[arrayDataCol]]))
+		
+		si = pData(ph)[1:(arrayFilesNum*2),]
+		lab = split(si,si[,"Label"])
+		
+		if(nrow(lab[[1]]) != nrow(lab[[2]])){
+			stop("Number of CY3/CY5 is not equal")
+		}
+		
+		#Reorder rows in each group (Cy3,Cy5) to the same order
+		lab[[1]] = lab[[1]][order(lab[[1]][,arrayDataCol]),]
+		lab[[2]] = lab[[2]][order(lab[[2]][,arrayDataCol]),]
+		
+		same = which(lapply(1:ncol(lab[[1]]), function(i) all(lab[[1]][i] == lab[[2]][i])) == TRUE)
+		all = lab[[1]][same]
+		gspe = lab[[1]][-same]
+		colnames(gspe) = paste(colnames(gspe),names(lab)[1],sep = ".")
+		rspe = lab[[2]][-same]
+		colnames(rspe) = paste(colnames(rspe),names(lab)[2],sep = ".")
+		
+		metaData = data.frame(labelDescription = c(rep("_ALL_",ncol(all)),rep("G",ncol(gspe)),rep("R",ncol(rspe))))
+		ph = new("AnnotatedDataFrame", data = cbind(all,gspe,rspe), varMetadata = metaData)
+		
+		arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))	
+		rownames(pData(ph)) = gsub(".[a-z][a-z][a-z]$","",ph[[arrayDataCol]],ignore.case=T)
+	#}
+	return(ph)
 }
 
 getSDRFcolumn = function(col,headers){

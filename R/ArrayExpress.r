@@ -9,7 +9,7 @@ ArrayExpress = function(accession, path = getwd(), save = FALSE, dataCols = NULL
 	
 	if(inherits(raweset, 'try-error')){
 		save = TRUE
-		raweset = expFiles
+		raweset = NULL
 	}
 	else{
 		if(length(raweset)==1){

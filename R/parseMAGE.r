@@ -373,10 +373,19 @@ getDataColsForAE1 = function(path,files){
 				sprintf("\"%s\" \n",allcnames))
 	
 	##Image Analysis Program
-	st = unique(sapply(seq_len(length(scanname)), function(i) strsplit(scanname,":")[[i]][1]))     
-	
-	if(length(grep(st, scanners)) == 0)
-		stop(sprintf("Scanner name is '%s'. This scanner type is not valid. \nTry to set the argument 'dataCols' by choosing among the following columns names: \n", st),sprintf("\"%s\" \n",scanname))
+	software = unique(sapply(seq_len(length(scanname)), function(i) strsplit(scanname,":")[[i]][1]))     
+	st = NULL
+
+    for(x in software){
+      if(length(grep(x, scanners)) != 0){
+        st = x
+        break
+      } 
+    }
+
+	#if(length(grep(st, scanners)) == 0)
+	if(is.null(st))
+    	stop(sprintf("Scanner name is, ",software,". This scanner type is not valid. \nTry to set the argument 'dataCols' by choosing among the following columns names: \n", st),sprintf("\"%s\" \n",scanname))
 	
 	if(length(st) != 1)
 		stop(sprintf("%s scanner names are given ( ",length(st)), sprintf("\"%s\" ",st), sprintf("). It is not possible to handle such a case. Try to set the argument 'dataCols' by choosing among the following columns names: \n") ,sprintf("\"%s\" \n",scanname))

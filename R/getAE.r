@@ -21,7 +21,7 @@ getAE = function (accession, path = getwd(), type = "full", extract = TRUE, loca
 		adfFiles = xpathApply(xml,"/files/experiment/file[kind='adf' and extension='txt']/name", xmlValue)
 		
 		rawArchiveURL = xpathApply(xml,"/files/experiment/file[kind='raw' and extension='zip']/url", xmlValue)
-		procArchiveURL = xpathApply(xml,"/files/experiment/file[kind='fgem' and extension='zip']/url", xmlValue)
+		procArchiveURL = xpathApply(xml,"/files/experiment/file[kind='processed' and extension='zip']/url", xmlValue)
 		
 	}else{
 		

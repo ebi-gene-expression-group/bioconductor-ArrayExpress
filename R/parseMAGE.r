@@ -184,13 +184,27 @@ readFeatures<-function(adf,path,procADFref=NULL){
 	if(!is.null(procADFref)){
 		if(procADFref %in% colnames(features))
 			rownames(features) = features[,procADFref]
+		else{
+			repCol = getSDRFcolumn("reporter",colnames(features))
+			if(length(repCol) != 0)
+				repCol= repCol[1]
+			else
+				repCol = getSDRFcolumn("composite",colnames(features))
+			if(length(repCol) != 0)
+				repCol = repCol[1]
+			else
+				repCol = NULL
+			if(!is.null(repCol))
+				rownames(features) = features[[repCol]]
+		}
 	}
 	
-#	rownames(features) = make.names(featurenames,unique=TRUE)
+
 	
 	#Sort ADF features by columns Block row/Block column/Row/Column (only applicable for raw data exps, processed data is ordered by reporter/composite name)
 	if("Block.Row" %in% colnames(features))
 		features = features[with(features,order(Block.Row,Block.Column,Row,Column)),]
+	
 	
 	#Row names of featureData must match row names of the matrix / matricies in assayData
 #	ri1 = grep("reporter.identifier|reporter.name", colnames(adff), ignore.case=TRUE)
@@ -264,7 +278,7 @@ skipADFheader<-function(adf,path,proc=F){
 		Found = TRUE
 		for(a in columns) 
 			Found = Found && length(grep(a,txt))
-		Found2 = length(grep("^Reporter Name",txt,ignore.case=TRUE))
+		Found2 = length(grep("^Reporter[[:punct:]|[:blank:]]*Name",txt,ignore.case=TRUE))
 		if(Found || Found2)
 			break
 	}
@@ -419,9 +433,10 @@ getDataColsForAE1 = function(path,files){
 					list(R = colnamesf[colnamesf[,2] == "Cy5",1], 
 						 G = colnamesf[colnamesf[,2] == "Cy3",1],
 						 Rb = colnamesb[colnamesb[,2] == "Cy5",1],
-						 Gb = colnamesb[colnamesb[,2] == "Cy3",1]) 
-				 else 
-					list(R = colnamesf[colnamesf[,2] == "Cy5",1], G = colnamesf[colnamesf[,2] == "Cy3",1])
+						 Gb = colnamesb[colnamesb[,2] == "Cy3",1])
+			 	 else 
+					list(R = colnamesf[colnamesf[,2] == "Cy5",1],
+						 G = colnamesf[colnamesf[,2] == "Cy3",1])
 		
 		if(length(rawcol) == 0 || (0 %in% sapply(seq_len(length(rawcol)), function(i) length(rawcol[[i]]))))
 			stop(sprintf("The known column names for this scanner are not in the heading of the files.\nTry to set the argument 'rawcol' by choosing among the following columns names: \n"),
@@ -429,7 +444,11 @@ getDataColsForAE1 = function(path,files){
 	}
 	## one channel data
 	if(df[1] == 1){
-		rawcol = list(R = colnamesf[,1], G = colnamesf[,1])
+		rawcol = if(db != 0)
+					list(G = colnamesf[,1],
+						 Gb = colnamesb[,1])
+			 	 else
+					 list(G = colnamesf[,1])
 	}
 	
 	if(df[1] == 0)
@@ -479,7 +498,11 @@ getSDRFcolumn = function(col,headers){
 			ArrayDesignREF = "^Array[[:punct:]|[:blank:]]*Design[[:punct:]|[:blank:]]*REF",
 			ArrayDataMatrixFile = "^Array[[:punct:]|[:blank:]]*Data[[:punct:]|[:blank:]]*Matrix[[:punct:]|[:blank:]]*File",
 			label = "^Label$",
-			factorValues = "^Factor[[:punct:]|[:blank:]]*Value")
+			factorValues = "^Factor[[:punct:]|[:blank:]]*Value",
+			DerivedArrayMatrix = "^Derived[[:punct:]|[:blank:]]*Array[[:punct:]|[:blank:]]*Data[[:punct:]|[:blank:]]*Matrix[[:punct:]|[:blank:]]*File",
+			DerivedArrayFile = "^Derived[[:punct:]|[:blank:]]*Array[[:punct:]|[:blank:]]*Data[[:punct:]|[:blank:]]*File",
+			reporter = "^Reporter[[:punct:]|[:blank:]]*[Name | Identifier]",
+			composite = "^Composite[[:punct:]|[:blank:]]*Element[[:punct:]|[:blank:]]*[Name | Identifier]")
 	colIndex = grep(pattern,headers,ignore.case = TRUE)
 	return(colIndex)
 }

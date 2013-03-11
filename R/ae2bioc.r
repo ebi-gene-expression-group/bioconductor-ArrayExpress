@@ -103,9 +103,9 @@ ae2bioc = function(mageFiles, dataCols=NULL){
 			#construct nchannelset
 			if(class(rawdata) == "RGList"){
 				assayData = if("Rb" %in% names(rawdata))
-							with(rawdata, assayDataNew(R = R, G = G, Rb = Rb, Gb = Gb)) #will not work if datacolumns where user specified
-						else 
-							with(rawdata, assayDataNew(G = G, Gb = Gb))
+								with(rawdata, assayDataNew(R = R, G = G, Rb = Rb, Gb = Gb)) #will not work if datacolumns where user specified
+							else 
+							with(rawdata, assayDataNew(G = G, R = R))
 				
 				raweset = new("NChannelSet",
 								assayData = assayData,
@@ -129,8 +129,13 @@ ae2bioc = function(mageFiles, dataCols=NULL){
 			}
 			
 			#Attach features
-			if(!is.null(features))
-				featureData(raweset) = features;
+			if(!is.null(rawdata$genes) && rawdata$source != "ae1"){
+				features2 = new("AnnotatedDataFrame",rawdata$genes)
+				featureData(raweset) = features2;
+			}
+			else
+				if(!is.null(features))
+					featureData(raweset) = features;
 			#consistency of order between features in featureData and assayData is established via previous sorting of feature columns
 			
 			if(length(featureNames(assayData(raweset))) != length(featureNames(featureData(raweset))))
@@ -142,6 +147,9 @@ ae2bioc = function(mageFiles, dataCols=NULL){
 		robjs[[grep(ad,adr)]]=raweset
 			
 	}
+	
+	if(length(robjs) == 1)
+		robjs = robjs[[1]]
 		
 	return(robjs)
 }

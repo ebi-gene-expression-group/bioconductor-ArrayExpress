@@ -12,12 +12,12 @@ ArrayExpress = function(accession, path = getwd(), save = FALSE, dataCols = NULL
 		raweset = NULL
 	}
 	else{
-		if(length(raweset)==1){
-			raweset = raweset[[1]];
+		if(!is.list(raweset)){
+#			raweset = raweset[[1]];
 			message(paste("\n",accession," was successfully loaded into ",class(raweset),"\n"))
 		}
-		else if(length(raweset)>1){
-			message(paste("\n",accession," was successfully loaded into ",length(raweset)," ",class(raweset[[1]]),"(s)\n"))
+		else {
+			message(paste("\n",accession," was successfully loaded into ",length(raweset)," ",unlist(lapply(raweset,function(x){class(x)})),"\n"))
 		}
 	}
 		

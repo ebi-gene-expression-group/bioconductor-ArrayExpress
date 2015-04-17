@@ -348,7 +348,7 @@ getDataFormat=function(path,files){
 }
 
 getDataColsForAE1 = function(path,files){
-	url2 = "http://tab2mage.svn.sourceforge.net/viewvc/tab2mage/trunk/Tab2MAGE/lib/ArrayExpress/Datafile/QT_list.txt" 
+	url2 = "http://sourceforge.net/p/tab2mage/code/HEAD/tree/trunk/Tab2MAGE/lib/ArrayExpress/Datafile/QT_list.txt?format=raw" 
 	
 	qt = try(read.table(url2, sep = "\t", quote = "",
 					check.names = FALSE, fill = TRUE,

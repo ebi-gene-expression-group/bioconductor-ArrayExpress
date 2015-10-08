@@ -1,4 +1,4 @@
-ArrayExpress = function(accession, path = getwd(), save = FALSE, dataCols = NULL){
+ArrayExpress = function(accession, path = tempdir(), save = FALSE, dataCols = NULL, drop = TRUE){
 	
 	expFiles = getAE(accession, path, type = "raw")
 	

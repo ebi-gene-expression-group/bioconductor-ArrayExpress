@@ -4,7 +4,7 @@
 ###############################################################################
 
 
-ae2bioc = function(mageFiles, dataCols=NULL){
+ae2bioc = function(mageFiles, dataCols=NULL, drop=TRUE){
 	
 #	if(!save) 
 #		on.exit(cleanupAE(as.list(mageFiles)))
@@ -18,8 +18,6 @@ ae2bioc = function(mageFiles, dataCols=NULL){
 	notuse = grep(dataFiles, pattern = "info.txt$|idf.txt$|processed|sdrf.txt$|.log$|RData|class")
 	if (length(notuse) != 0) 
 		dataFiles = dataFiles[-notuse]
-	if (length(notuse) == 0) 
-		dataFiles = dataFiles
 	dataFiles = dataFiles[dataFiles != ""]
 	allDataFiles = dataFiles;
 	
@@ -27,7 +25,7 @@ ae2bioc = function(mageFiles, dataCols=NULL){
 		stop("ArrayExpress: Experiment has no raw files available. Consider using processed data instead by following procedure in the vignette")
 	
 	#read sample annotations
-	ph = readPhenoData(sdrf,path);
+	ph = readPhenoData(sdrf,path)
 	if(inherits(ph, 'try-error')){
 		ph=NULL
 		stop("ArrayExpress: Parsing SDRF failed. Please make sure SDRF file ",sdrf," exists in ",path, " and is not corrupt.")
@@ -69,7 +67,7 @@ ae2bioc = function(mageFiles, dataCols=NULL){
 			stop("ArrayExpress: Unable to read assay data")
 		
 		#read and match array feature metadata to raw data
-		if(class(rawdata) != "AffyBatch"){
+		if(!inherits(rawdata,"FeatureSet")){
 			adfFile = adf[grep(ad,adf)]
 			features= try(readFeatures(adf=adfFile,path=path))
 			if(inherits(features, "try-error")){
@@ -88,21 +86,17 @@ ae2bioc = function(mageFiles, dataCols=NULL){
 
 		#Finally build ExpressionSet
 		
-		#Attach pheno and feature data to AffyBatch
-		if(class(rawdata) == "AffyBatch"){
+		#Attach pheno and feature data to oligo::FeatureSet
+		if(inherits(rawdata,"FeatureSet")){
 			raweset=rawdata
-			dataSamples = gsub(".[a-z][a-z][a-z]$","",sampleNames(rawdata),ignore.case=T)
-			ph = ph[dataSamples,]
-			phenoData(raweset) = ph
-			sampleNames(protocolData(raweset)) = sampleNames(ph)
-			experimentData(raweset) = experimentData
+			phenoData(raweset) = ph[sampleNames(rawdata)]
 		}
 		
 		
 		if(class(rawdata) == "RGList" | class(rawdata) == "EListRaw"){
 			#construct nchannelset
 			if(class(rawdata) == "RGList"){
-				assayData = if("Rb" %in% names(rawdata))
+				assayData = if("Rb" %in% names(rawdata)) #FIXME: keep all
 								with(rawdata, assayDataNew(R = R, G = G, Rb = Rb, Gb = Gb)) #will not work if datacolumns where user specified
 							else 
 							with(rawdata, assayDataNew(G = G, R = R))
@@ -121,10 +115,9 @@ ae2bioc = function(mageFiles, dataCols=NULL){
 			}
 			
 			#Attach pheno data
-			if(!is.null(ph)){
+			if(!is.null(ph)){ #FIXME:?
 				#imagene doesnt have targets slot
-				dataSamples = gsub(".[a-z][a-z][a-z]$","",rawdata$targets$FileName,ignore.case=T)
-				ph = ph[dataSamples,]
+				ph = ph[rawdata$targets$FileName,]
 				phenoData(raweset) = ph
 			}
 			
@@ -144,12 +137,12 @@ ae2bioc = function(mageFiles, dataCols=NULL){
 		}
 		
 		
-		robjs[[grep(ad,adr)]]=raweset
+		robjs[[ad]]=raweset
 			
 	}
+
+    if(drop && length(robjs) == 1)
+        robjs = robjs[[1]]
 	
-	if(length(robjs) == 1)
-		robjs = robjs[[1]]
-		
 	return(robjs)
 }

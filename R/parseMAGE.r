@@ -30,13 +30,21 @@ headers<-list(
 isOneChannel = function(sdrf,path){
 	ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$", quote="\""))
 	labelCol = getSDRFcolumn("label",varLabels(ph))
-	return(length(unique(tolower(ph[[labelCol]])))==1)
+    if(length(labelCol)==0)
+        return(TRUE) # assume 1-color if no label reported - we warn the user in readPhenoData
+    else
+	    return(length(unique(tolower(ph[[labelCol]])))==1)
 }
 
 readPhenoData = function(sdrf,path){
 	
 	message("ArrayExpress: Reading pheno data from SDRF")
 	ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$", quote="\""))
+
+	ph = ph[gsub(" ", "", ph$Array.Data.File) != ""]
+	sampleNames(ph) = ph$Array.Data.File
+	ph@varMetadata['Array.Data.File','labelDescription'] = "Index"
+	ph@varMetadata['Array.Data.File','channel'] = as.factor("_ALL_")
 		
 	#Remove empty rows from pheno data
 	emptylines = which(sapply(seq_len(nrow(pData(ph))), function(i) all(pData(ph)[i,] == "",na.rm = TRUE)))
@@ -47,25 +55,18 @@ readPhenoData = function(sdrf,path){
 	arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))
 	labelCol = getSDRFcolumn("label",varLabels(ph))
 	
-	if(length(arrayDataCol)==0 || length(labelCol)==0)
-		if(length(arrayDataCol)==0)
-			warning("ArrayExpress: Cannot find 'Array Data File' column in SDRF. Object might not be created correctly.")
-		if(length(labelCol)==0)
-			warning("ArrayExpress: Cannot find 'Label' column in SDRF. Object might not be created correctly.")
-		
+	if(length(arrayDataCol)==0)
+		warning("ArrayExpress: Cannot find 'Array Data File' column in SDRF. Object might not be created correctly.")
+	if(length(labelCol)==0)
+		warning("ArrayExpress: Cannot find 'Label' column in SDRF. Object might not be created correctly.")
+
 	if(length(arrayDataCol)!=0 && length(labelCol)!=0){
 		#filter out duplicated rows where multiple derived data files are available per one array data file
 		ph=ph[!duplicated(phenoData[,c(arrayDataCol,labelCol)])]
 	}
 	
-	
-	if(length(arrayDataCol)!=0 & length(unique(tolower(ph[[labelCol]])))==1)
-		#set rownames of phenoData annotated data frame to array data files			
-		rownames(pData(ph)) = gsub(".[a-z][a-z][a-z]$","",ph[[arrayDataCol]],ignore.case=T)
-	
-	
 	#treat SDRF for two channel experiments
-	if(length(unique(tolower(ph[[labelCol]])))==2){
+	if(length(labelCol)==1 && length(unique(tolower(ph[[labelCol]])))==2){
 		
 		arrayFilesNum = length(unique(ph[[arrayDataCol]]))
 		
@@ -116,7 +117,7 @@ readAEdata = function(path,files,dataCols,green.only){
 #	}
 	
 	if(source == "affy"){
-		rawdata = try(ReadAffy(filenames = file.path(path,unique(files))))
+		rawdata = try(oligo::read.celfiles(filenames = file.path(path,unique(files))))
 		if(inherits(rawdata, 'try-error')){
 			stop("Unable to read cel files in",path)
 		}
@@ -219,7 +220,7 @@ readFeatures<-function(adf,path,procADFref=NULL){
 ## Assign experiment Data
 ## By Juok Cho
 readExperimentData = function(idf, path){
-	idffile = scan(file.path(path,idf),character(),sep = "\n")
+	idffile = scan(file.path(path,idf),character(),sep = "\n",encoding="UTF-8")
 	idf.data = list()
 	for(g in idffile) { 
 		e = unlist(strsplit(g,"\t"))
@@ -353,14 +354,16 @@ getDataColsForAE1 = function(path,files){
 	qt = try(read.table(url2, sep = "\t", quote = "",
 					check.names = FALSE, fill = TRUE,
 					comment.char = "#",               
-					stringsAsFactors =  FALSE)) ##read the QT file from the web
+					stringsAsFactors =  FALSE,
+					encoding = "UTF-8")) ##read the QT file from the web
 	if(inherits(qt, "try-error"))
 		qt = try(read.table(
 						file.path(system.file("doc", package = "ArrayExpress"),"QT_list.txt"),
 						sep = "\t", quote = "",
 						check.names = FALSE, fill = TRUE,
 						comment.char = "#",               
-						stringsAsFactors =  FALSE)) ##read the QT file from the package
+						stringsAsFactors =  FALSE,
+						encoding = "UTF-8")) ##read the QT file from the package
 	
 	
 	scanners = grep(">>>",qt[,1],value = TRUE) ## list all the scanner names

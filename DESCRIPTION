@@ -1,7 +1,5 @@
 Package: ArrayExpress
-Title: Access the ArrayExpress Microarray Database at EBI and build
-        Bioconductor data structures: ExpressionSet, AffyBatch,
-        NChannelSet
+Title: Access the ArrayExpress Microarray Database at EBI and build Bioconductor data structures: ExpressionSet, AffyBatch, NChannelSet
 Version: 1.29.2
 Author: Audrey Kauffmann, Ibrahim Emam, Michael Schubert
 Maintainer: Ugis Sarkans <ugis@ebi.ac.uk>

@@ -11,7 +11,7 @@
   \code{ArrayExpress} needs an Internet connection.
 }
 \usage{
-ArrayExpress(accession, path = getwd(), save = FALSE, dataCols = NULL)
+ArrayExpress(accession, path = tempdir(), save = FALSE, dataCols = NULL, drop = TRUE)
 }
 \arguments{
   \item{accession}{ an ArrayExpress experiment identifier.}
@@ -30,6 +30,7 @@ ArrayExpress(accession, path = getwd(), save = FALSE, dataCols = NULL)
     arrays, it must be a character string with the column name to be
     used. These column names must correspond to existing column names of
     the expression files.}
+  \item{drop}{ if TRUE and only one platform in series, the platform name will be dropped.}	
   }
 \value{
   The output is an object of class

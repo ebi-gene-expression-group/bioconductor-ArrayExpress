@@ -7,7 +7,7 @@
   ExpressionSet or a NChannelSet.
 }
 \usage{
-ae2bioc(mageFiles, dataCols = NULL)
+ae2bioc(mageFiles, dataCols = NULL, drop = TRUE)
 }
 \arguments{
 
@@ -30,6 +30,7 @@ ae2bioc(mageFiles, dataCols = NULL)
     arrays, it must be a character string with the column name to be
     used. These column names must correspond to existing column names of
     the expression files.}
+  \item{drop}{ if TRUE and only one platform in series, the platform name will be dropped.}	
  
 }
 

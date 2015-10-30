@@ -5,7 +5,7 @@ ArrayExpress = function(accession, path = tempdir(), save = FALSE, dataCols = NU
 #	if(!save) 
 #		on.exit(cleanupAE(expFiles))
 	
-	raweset = try(ae2bioc(mageFiles = expFiles, dataCols = dataCols))
+	raweset = try(ae2bioc(mageFiles = expFiles, dataCols = dataCols, drop=drop))
 	
 	if(inherits(raweset, 'try-error')){
 		save = TRUE

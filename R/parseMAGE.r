@@ -41,6 +41,14 @@ readPhenoData = function(sdrf,path){
 	message("ArrayExpress: Reading pheno data from SDRF")
 	ph = try(read.AnnotatedDataFrame(sdrf, path = path, row.names = NULL, blank.lines.skip = TRUE, fill = TRUE, varMetadata.char = "$", quote="\""))
 
+        arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))
+        labelCol = getSDRFcolumn("label",varLabels(ph))
+
+        if(length(arrayDataCol)==0)
+                warning("ArrayExpress: Cannot find 'Array Data File' column in SDRF. Object might not be created correctly.")
+        if(length(labelCol)==0)
+                warning("ArrayExpress: Cannot find 'Label' column in SDRF. Object might not be created correctly.")
+
 	ph = ph[gsub(" ", "", ph$Array.Data.File) != ""]
 	sampleNames(ph) = ph$Array.Data.File
 	ph@varMetadata['Array.Data.File','labelDescription'] = "Index"
@@ -52,13 +60,6 @@ readPhenoData = function(sdrf,path){
 		pData(ph) = pData(ph)[-emptylines,]
 		
 	phenoData = pData(ph)
-	arrayDataCol = getSDRFcolumn("ArrayDataFile",varLabels(ph))
-	labelCol = getSDRFcolumn("label",varLabels(ph))
-	
-	if(length(arrayDataCol)==0)
-		warning("ArrayExpress: Cannot find 'Array Data File' column in SDRF. Object might not be created correctly.")
-	if(length(labelCol)==0)
-		warning("ArrayExpress: Cannot find 'Label' column in SDRF. Object might not be created correctly.")
 
 	if(length(arrayDataCol)!=0 && length(labelCol)!=0){
 		#filter out duplicated rows where multiple derived data files are available per one array data file

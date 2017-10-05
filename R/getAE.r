@@ -7,9 +7,9 @@
 getAE = function (accession, path = getwd(), type = "full", extract = TRUE, local = FALSE, sourcedir=path) {
 	
 	if(!local){
-		baseURL = "http://www.ebi.ac.uk/arrayexpress/xml/v2/files"
+		baseURL = "https://www.ebi.ac.uk/arrayexpress/xml/v2/files"
 		xmlURL = paste(baseURL,accession,sep="/")
-		xml = xmlTreeParse(xmlURL,useInternalNodes=TRUE)
+		xml = xmlTreeParse(suppressWarnings(readLines(xmlURL)),useInternalNodes=TRUE)
 		
 		sdrfURL = xpathSApply(xml,"/files/experiment/file[kind='sdrf' and extension='txt']/url", xmlValue)
 		sdrfFile = xpathSApply(xml,"/files/experiment/file[kind='sdrf' and extension='txt']/name", xmlValue)
@@ -57,7 +57,7 @@ getAE = function (accession, path = getwd(), type = "full", extract = TRUE, loca
 			
 		else{
 			#ADF not found in local directory. Attempt to retrieve it from FTP
-			filesURL="http://www.ebi.ac.uk/arrayexpress/files";
+			filesURL="https://www.ebi.ac.uk/arrayexpress/files";
 			adfURL = paste(filesURL,adr,adfFiles,sep="/");
 			downloadADF = TRUE
 		}

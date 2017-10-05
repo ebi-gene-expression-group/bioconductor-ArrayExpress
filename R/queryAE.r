@@ -48,12 +48,12 @@ queryAE = function(keywords = NULL, species = NULL){
 	if(is.null(keywords) && is.null(species))
 		stop("No keywords or species specified")
 	
-	baseURL = "http://www.ebi.ac.uk/arrayexpress/xml/v2/experiments";
+	baseURL = "https://www.ebi.ac.uk/arrayexpress/xml/v2/experiments";
     
 	qr = paste(baseURL,"?keywords=",keywords,"&species=",species,sep="")
   	qr=URLencode(qr)
     queryfilename = paste("query",keywords,species,".xml",sep="")
-    query = try(download.file(qr, queryfilename, mode="wb"))
+    query = try(download.file(qr, queryfilename, mode="wb", method="curl"))
     
     x = xmlTreeParse(queryfilename)
     

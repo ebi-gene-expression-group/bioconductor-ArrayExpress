@@ -24,6 +24,16 @@ ae2bioc = function(mageFiles, dataCols=NULL, drop=TRUE){
 	if(length(dataFiles)==0)
 		stop("ArrayExpress: Experiment has no raw files available. Consider using processed data instead by following procedure in the vignette")
 	
+	#check for duplicates in sdrf
+	sdrfData<-read.delim(paste(path,sdrf,sep="/"), check.names=FALSE)
+	if(any(duplicated(sdrfData[, 'Array Data File']))){
+	  message("Duplicates found in SDRF file")
+	  #remove duplicates based on Array Data Files and update SDRF
+	  sdrfData<-sdrfData[!duplicated(sdrfData[, 'Array Data File']), ]
+	  write.table(sdrfData, file=sdrf, row.names=FALSE, quote=FALSE, sep='\t')
+	  message("Removed duplicates in SDRF file")
+	}
+
 	#read sample annotations
 	ph = readPhenoData(sdrf,path)
 	if(inherits(ph, 'try-error')){

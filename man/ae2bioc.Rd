@@ -52,7 +52,7 @@ ae2bioc(mageFiles, dataCols = NULL, drop = TRUE)
 \author{
   Ibrahim Emam
   
-  Maintainer: <iemam@ebi.ac.uk>  
+  Maintainer: Jose Marugan <jcmarca@ebi.ac.uk>  
 }
 \examples{
 # An example can be found in the help of the getAE function.

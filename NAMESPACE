@@ -1,12 +1,3 @@
-importFrom("XML", "xmlTreeParse",
-           "xmlRoot",
-           "xpathSApply",
-           "xpathApply",
-           "xmlValue",
-           "xmlAttrs",
-           "xmlElementsByTagName",
-           "getNodeSet",
-           "xmlGetAttr")
 importFrom("Biobase", "pData",
            "pData<-",
            "phenoData",
@@ -22,7 +13,13 @@ importFrom("Biobase", "pData",
            "featureNames",
            "assayData")
 importFrom("limma", "read.maimages")
+importFrom("httr", "GET", "status_code", "content")
 importFrom("oligo", "read.celfiles")
-importFrom("utils","URLencode")
+importFrom("utils","URLencode", "download.file", "read.delim", "read.table",
+            "unzip", "write.table")
+importFrom("jsonlite", "fromJSON" )
+importFrom("rlang", "is_empty" )
+importFrom("tools", "file_ext" )
+importFrom("methods", "new")
 export("ArrayExpress", "getAE", "queryAE", "ae2bioc", "getcolproc", "getcolraw", "procset", "extract.zip")
 

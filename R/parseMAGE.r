@@ -515,14 +515,14 @@ getSDRFcolumn = function(col,headers){
 cleanupAE = function(mageFiles){
 	path = mageFiles$path
 	
-	try(file.remove(file.path(path, mageFiles$rawFiles)))
-	try(file.remove(file.path(path, mageFiles$processedFiles)))
+	try(file.remove(file.path(path, basename(mageFiles$rawFiles))))
+	try(file.remove(file.path(path, basename(mageFiles$processedFiles))))
 	
-	try(file.remove(file.path(path, mageFiles$sdrf)))
-	try(file.remove(file.path(path, mageFiles$idf)))
-	try(file.remove(file.path(path, mageFiles$adf)))
-	try(file.remove(file.path(path, mageFiles$rawArchive)))
-	try(file.remove(file.path(path, mageFiles$processedArchive)))
+	try(file.remove(file.path(path, basename(mageFiles$sdrf))))
+	try(file.remove(file.path(path, basename(mageFiles$idf))))
+	try(file.remove(file.path(path, basename(mageFiles$adf))))
+	try(file.remove(file.path(path, basename(mageFiles$rawArchive))))
+	try(file.remove(file.path(path, basename(mageFiles$processedArchive))))
 }
 
 

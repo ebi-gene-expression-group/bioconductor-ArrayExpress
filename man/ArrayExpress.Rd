@@ -1,13 +1,13 @@
 \name{ArrayExpress}
 \alias{ArrayExpress}
 \docType{data}
-\title{ R objects from ArrayExpress database }
+\title{ R objects from ArrayExpress collection }
 \description{
   \code{ArrayExpress} produces an
   \code{\link[affy:AffyBatch-class]{AffyBatch}}, an
   \code{\link[Biobase:class.ExpressionSet]{ExpressionSet}}
   or a \code{\link[Biobase:class.NChannelSet]{NChannelSet}} from a raw
-  dataset from the ArrayExpress database.
+  dataset from the ArrayExpress collection of the Biostudies database.
   \code{ArrayExpress} needs an Internet connection.
 }
 \usage{
@@ -53,7 +53,7 @@ ArrayExpress(accession, path = tempdir(), save = FALSE, dataCols = NULL, drop = 
 \author{
   Audrey Kauffmann, Ibrahim Emam 
   
-  Maintainer: <iemam@ebi.ac.uk>  
+  Maintainer: Jose Marugan <jcmarca@ebi.ac.uk>  
 }
 \examples{
 ETABM25.affybatch = ArrayExpress("E-TABM-25")

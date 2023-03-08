@@ -1,13 +1,13 @@
 \name{getAE}
 \alias{getAE}
 \docType{data}
-\title{ Download MAGE-TAB files from ArrayExpress in a specified directory }
+\title{ Download MAGE-TAB files from the ArrayExpress collection in a specified directory }
 \description{
   \code{getAE} downloads and extracts the MAGE-TAB files from an
   ArrayExpress dataset.
 }
 \usage{
-getAE(accession, path = getwd(), type = "full", extract = TRUE, local = FALSE, sourcedir = path)
+getAE(accession, path = getwd(), type = "full", extract = TRUE, sourcedir = path, overwrite = FALSE)
 }
 \arguments{
   \item{accession}{ is an ArrayExpress experiment identifier. }
@@ -17,8 +17,8 @@ getAE(accession, path = getwd(), type = "full", extract = TRUE, local = FALSE, s
     'processed' to download and extract only the processed data or
     'full' to have both raw and processed data.}
   \item{extract}{ if FALSE, the files are not extracted from the zip archive.}
-  \item{local}{ if TRUE, files will be read from a local folder specified by sourcedir.}
   \item{sourcedir}{ when local = TRUE, files will be read from this directory.}
+  \item{overwrite}{ if TRUE, overwrite files if they already exist in path, default FALSE.}
 }
 \value{
   \code{ A list with the names of the files that
@@ -31,7 +31,7 @@ getAE(accession, path = getwd(), type = "full", extract = TRUE, local = FALSE, s
 \author{
   Ibrahim Emam, Audrey Kauffmann 
   
-  Maintainer: <iemam@ebi.ac.uk>  
+  Maintainer: Jose Marugan <jcmarca@ebi.ac.uk>  
 }
 \examples{
 mexp1422 = getAE("E-MEXP-1422", type = "full")

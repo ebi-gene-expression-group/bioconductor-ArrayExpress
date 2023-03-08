@@ -21,6 +21,6 @@ extract.zip(file, extractpath = dirname(file)[1])
 \author{
   Audrey Kauffmann 
   
-  Maintainer: <kauffmann@bergonie.org>  
+  Maintainer: Jose Marugan <jcmarca@ebi.ac.uk>  
 }
 \keyword{datasets}

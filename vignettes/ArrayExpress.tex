@@ -1,0 +1,46 @@
+%\VignetteIndexEntry{ArrayExpress: Import and convert ArrayExpress data sets into R object}
+%\VignetteDepends{Biobase,oligo,limma}
+%\VignetteKeywords{ImportData}
+%\VignettePackage{ArrayExpress}
+
+\documentclass[a4paper]{article}
+
+\usepackage{times}
+\usepackage{a4wide}
+\usepackage{verbatim}
+
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Rclass}[1]{\textit{#1}}
+\newcommand{\Rfunction}[1]{{\small\texttt{#1}}}
+\clearpage
+
+ 
+
+\usepackage{Sweave}
+\begin{document}
+\input{ArrayExpress-concordance}
+
+\title{ Building R objects from ArrayExpress datasets }
+
+\author{Audrey Kauffmann}
+\mantainer{Jose Marugan}
+\maketitle
+
+\section{ArrayExpress Collection in Biostudies database} 
+
+ArrayExpress is a public Collection of datasets for transcriptomics and related data, which is aimed at storing MIAME-compliant data in accordance with MGED recommendations. The Gene Expression Atlas stores gene-condition summary expression profiles from a curated subset of experiments in the repository.
+Currently, around 76,635 studies are represented in the ArrayExpress Collection. Please visit https://www.ebi.ac.uk/biostudies/arrayexpress for more information on the collection.
+
+\section{MAGE-TAB format}
+In the repository, for each dataset, ArrayExpress stores a MAGE-TAB document with standardized format. A MAGE-TAB document contains five different types of files Investigation Description Format (IDF), Array Design Format (ADF), Sample and Data Relationship Format (SDRF), the raw data files and the processed data files. The tab-delimited IDF file contains top level information about the experiment including title, description, submitter contact details and protocols. The tab-delimited ADF file describes the design of an array, e.g., what sequence is located at each position on an array and what the annotation of this sequence is. The tab-delimited SDRF file contains the sample annotation and the relationship between arrays as provided by the submitter. The raw zip file contains the raw files (like the CEL files for Affymetrix chips or the GPR files from the GenePix scanner for instance),  and the processed zip file contains all processed data in one generic tab delimited text format.
+
+\section{Querying ArrayExpress Collection}
+
+It is possible to query the ArrayExpress collection, using the \Rfunction{queryAE} function. Two arguments are available, 'keywords' and 'species'. You can use both of them simultaneously or each of them independently, according to your needs. If you want to use several words, they need to be separated by a '+' without any space.
+Here is an example where the object \Robject{sets} contains the identifiers of all the datasets for which the word 'pneumonia' was found in the description and for which the Homo sapiens is the studied species.
+You need to be connected to Internet to have access to the database.
+
+\begin{Schunk}
+\begin{Sinput}
+> library("ArrayExpress")

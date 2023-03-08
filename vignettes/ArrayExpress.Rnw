@@ -18,23 +18,25 @@
 \SweaveOpts{keep.source=TRUE,eps=FALSE,include=FALSE,width=4,height=4.5} 
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \title{ Building R objects from ArrayExpress datasets }
 
 \author{Audrey Kauffmann}
+
 \maketitle
 
-\section{ArrayExpress database} 
+\section{ArrayExpress Collection in Biostudies database} 
 
-ArrayExpress is a public repository for transcriptomics and related data, which is aimed at storing MIAME-compliant data in accordance with MGED recommendations. The Gene Expression Atlas stores gene-condition summary expression profiles from a curated subset of experiments in the repository.
-Currently, around 917 460 assays are represented in ArrayExpress. Please visit http://www.ebi.ac.uk/arrayexpress/ for more information on the database.
+ArrayExpress is a public Collection of datasets for transcriptomics and related data, which is aimed at storing MIAME-compliant data in accordance with MGED recommendations. The Gene Expression Atlas stores gene-condition summary expression profiles from a curated subset of experiments in the repository.
+Currently, around 76,635 studies are represented in the ArrayExpress Collection. Please visit https://www.ebi.ac.uk/biostudies/arrayexpress for more information on the collection.
 
 \section{MAGE-TAB format}
 In the repository, for each dataset, ArrayExpress stores a MAGE-TAB document with standardized format. A MAGE-TAB document contains five different types of files Investigation Description Format (IDF), Array Design Format (ADF), Sample and Data Relationship Format (SDRF), the raw data files and the processed data files. The tab-delimited IDF file contains top level information about the experiment including title, description, submitter contact details and protocols. The tab-delimited ADF file describes the design of an array, e.g., what sequence is located at each position on an array and what the annotation of this sequence is. The tab-delimited SDRF file contains the sample annotation and the relationship between arrays as provided by the submitter. The raw zip file contains the raw files (like the CEL files for Affymetrix chips or the GPR files from the GenePix scanner for instance),  and the processed zip file contains all processed data in one generic tab delimited text format.
 
-\section{Querying the database}
+\section{Querying ArrayExpress Collection}
 
-It is possible to query the ArrayExpress repository, using the \Rfunction{queryAE} function. Two arguments are available, 'keywords' and 'species'. You can use both of them simultaneously or each of them independently, according to your needs. If you want to use several words, they need to be separated by a '+' without any space.
+It is possible to query the ArrayExpress collection, using the \Rfunction{queryAE} function. Two arguments are available, 'keywords' and 'species'. You can use both of them simultaneously or each of them independently, according to your needs. If you want to use several words, they need to be separated by a '+' without any space.
 Here is an example where the object \Robject{sets} contains the identifiers of all the datasets for which the word 'pneumonia' was found in the description and for which the Homo sapiens is the studied species.
 You need to be connected to Internet to have access to the database.
 
@@ -44,10 +46,8 @@ sets = queryAE(keywords = "pneumonia", species = "homo+sapiens")
 @
 %
 
-In August 2012, this query retrieved 21 identifiers. The output is a dataframe with the identifiers and 7 columns giving the number of data raw and processed. When raw and processed data are available for the same dataset, a unique identifier is given for both. There is no way to distinguish between a processed and a raw dataset just from the identifier. The column 'Raw' from the output of \Rfunction{queryAE} allows to know if the raw data are available for a data set.
-The following columns contain the release date of the dataset on the database, the pubmed ID of the publication related to the dataset, the species, the experiment design and the experimental factors.
-The experiment design defines what was studied by the authors, such as time series, disease state or compound treatment. The experimental factors are the values of the studied factors, "Day 1", "Day 2" for instance.
-For a more extended querying mode, the ArrayExpress website offers an advanced query interface with detailed results.
+In March 2023, this query retrieved 87 identifiers. The output is a dataframe with the identifiers and 9 columns giving the information about these datasets, such as the number of files, the release date on the database, the title, the author and content.
+For a more extended querying mode, the Biostudies/ArrayExpress website offers an advanced query interface with detailed results.
 
 
 \section{Import an ArrayExpress dataset into R}

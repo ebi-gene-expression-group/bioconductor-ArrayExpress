@@ -9,12 +9,11 @@
 }
 
 \usage{
-getcolraw(path, rawfiles)
+getcolraw(rawfiles)
 }
 
 \arguments{
   \item{rawfiles}{rawfiles are the name of the raw MAGE-TAB files to be read.}
-  \item{path}{is the name of the directory where to find these files.}
 }
 
 \seealso{\code{\link[ArrayExpress]{ArrayExpress}},
@@ -23,6 +22,6 @@ getcolraw(path, rawfiles)
 \author{
   Audrey Kauffmann 
   
-  Maintainer: <iemam@ebi.ac.uk>  
+  Maintainer: Jose Marugan <jcmarca@ebi.ac.uk>  
 }
 \keyword{datasets}

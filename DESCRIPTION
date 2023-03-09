@@ -1,6 +1,6 @@
 Package: ArrayExpress
 Title: Access the ArrayExpress Collection at EMBL-EBI Biostudies and build Bioconductor data structures: ExpressionSet, AffyBatch, NChannelSet
-Version: 1.60.0
+Version: 1.59.2
 Author: Audrey Kauffmann, Ibrahim Emam, Michael Schubert, Jose Marugan
 Maintainer: Jose Marugan <jcmarca@ebi.ac.uk>
 Depends: R (>= 2.9.0), Biobase (>= 2.4.0)

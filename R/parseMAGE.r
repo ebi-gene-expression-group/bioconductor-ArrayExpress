@@ -118,9 +118,15 @@ readAEdata = function(path,files,dataCols,green.only){
 #	}
 	
 	if(source == "affy"){
-		rawdata = try(oligo::read.celfiles(filenames = file.path(path,unique(files))))
+	  if (.Platform$OS.type == "windows"){
+	    rawdata = try(oligo::read.celfiles(filenames = file.path(path,unique(files), fsep='\\')))
+	  }
+	  else{
+	    rawdata = try(oligo::read.celfiles(filenames = file.path(path,unique(files))))
+	  }
+		
 		if(inherits(rawdata, 'try-error')){
-			stop("Unable to read cel files in",path)
+			stop("Unable to read cel files in ",path)
 		}
 		return(rawdata)
 		

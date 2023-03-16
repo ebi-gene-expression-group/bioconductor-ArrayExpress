@@ -520,15 +520,20 @@ getSDRFcolumn = function(col,headers){
 ## remove all downloaded files
 cleanupAE = function(mageFiles){
 	path = mageFiles$path
+	if (.Platform$OS.type == "windows"){
+	  sep = '\\'
+	}
+	else{
+	  sep = '/'
+	}
+	try(file.remove(file.path(path, basename(mageFiles$rawFiles), fsep = sep)))
+	try(file.remove(file.path(path, basename(mageFiles$processedFiles), fsep = sep)))
 	
-	try(file.remove(file.path(path, basename(mageFiles$rawFiles))))
-	try(file.remove(file.path(path, basename(mageFiles$processedFiles))))
-	
-	try(file.remove(file.path(path, basename(mageFiles$sdrf))))
-	try(file.remove(file.path(path, basename(mageFiles$idf))))
-	try(file.remove(file.path(path, basename(mageFiles$adf))))
-	try(file.remove(file.path(path, basename(mageFiles$rawArchive))))
-	try(file.remove(file.path(path, basename(mageFiles$processedArchive))))
+	try(file.remove(file.path(path, basename(mageFiles$sdrf), fsep = sep)))
+	try(file.remove(file.path(path, basename(mageFiles$idf), fsep = sep)))
+	try(file.remove(file.path(path, basename(mageFiles$adf), fsep = sep)))
+	try(file.remove(file.path(path, basename(mageFiles$rawArchive), fsep = sep)))
+	try(file.remove(file.path(path, basename(mageFiles$processedArchive), fsep = sep)))
 }
 
 

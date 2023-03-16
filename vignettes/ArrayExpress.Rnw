@@ -79,11 +79,11 @@ You still need to be connected to Internet to have access to the database.
 The output object is an \Rclass{AffyBatch} if the ArrayExpress identifier corresponds to an Affymetrix experiment, it is an \Rclass{ExpressionSet} if the identifier corresponds to a one colour non Affymetrix experiment and it is a \Rclass{NChannelSet} if the identifier corresponds to a two colours experiment.
 
 <<ArrayExpress-raw>>=
-rawset = ArrayExpress("E-MEXP-1422")
+rawset = ArrayExpress("E-MEXP-21")
 @
 %
 
-In this example, \emph{'E-MEXP-1422'} being an Affymetrix experiment, 'rawset' is an \Rclass{AffyBatch}.
+In this example, \emph{'E-MEXP-21'} being an Affymetrix experiment, 'rawset' is an \Rclass{AffyBatch}.
 The expression values of 'rawset' are the content from the CEL files.
 The \Rclass{phenoData} of 'rawset' contains the whole sample annotation file content from the MAGE-TAB sdrf file.
 The \Rclass{featureData} of 'rawset' contains the whole feature annotation file content from the MAGE-TAB adf file.
@@ -115,7 +115,7 @@ It is possible to only download the data, by calling the function \Rfunction{get
 Here, you also need Internet connection to access the database.
 
 <<getAE-full>>=
-mexp1422 = getAE("E-MEXP-1422", type = "full")
+mexp1422 = getAE("E-MEXP-21", type = "full")
 @
 
 Here, the output is a list of all the files that have been downloaded and extracted in the directory 'path'.
@@ -175,7 +175,7 @@ We can now create the \Rclass{ExpressionSet} using \Rfunction{procset}. This fun
 proset = procset(mexp1422, cn[2])
 @ 
 
-\Robject{proset} is an \Rclass{ExpressionSet} containing the processed log(ratio) of the dataset E-MEXP-1422.
+\Robject{proset} is an \Rclass{ExpressionSet} containing the processed log(ratio) of the dataset E-MEXP-21.
 
 
 %Turning off evaluation of this section for now (Oct 26, 2011) 

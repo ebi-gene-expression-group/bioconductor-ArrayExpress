@@ -34,14 +34,14 @@ getAE(accession, path = getwd(), type = "full", extract = TRUE, sourcedir = path
   Maintainer: Jose Marugan <jcmarca@ebi.ac.uk>  
 }
 \examples{
-mexp1422 = getAE("E-MEXP-1422", type = "full")
+mexp21 = getAE("E-MEXP-21", type = "full")
 
 ## Build a an ExpressionSet from the raw data
-MEXP1422raw = ae2bioc(mageFiles = mexp1422)
+MEXP21raw = ae2bioc(mageFiles = mexp21)
 
 ## Build a an ExpressionSet from the processed data
-cnames = getcolproc(mexp1422)
-MEXP1422proc = procset(mexp1422, cnames[2])
+cnames = getcolproc(mexp21)
+MEXP21proc = procset(mexp21, cnames[2])
 
 }
 \keyword{datasets}
